@@ -19,8 +19,8 @@ def connect_earthexplorer_proxy(usgs,proxy):
      proxy_info = {
      'user' : proxy['account'],
      'pass' : proxy['passwd'],
-     'host' : 'proxy.myproxy.int',
-     'port' : 8050
+     'host' : proxy['address'],
+     'port' : proxy['port'],
      }
      # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
      proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)d" % proxy_info,
@@ -109,7 +109,7 @@ if len(sys.argv) == 1:
 	print "     Aide : ", prog, " --help"
 	print "        ou : ", prog, " -h"
 	print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
-	print "example (liste): python %s -o date -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]
+	print "example (liste): python %s -o liste -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]
 	sys.exit(-1)
 else:
 	usage = "usage: %prog [options] "
@@ -147,7 +147,43 @@ else:
 rep='/tmp/LANDSAT'
 if not os.path.exists(rep):
     os.mkdir(rep)
+    if options.option==liste:
+	if not os.path.exists(rep+'/LISTE'):
+	     os.mkdir(rep+'/LISTE')
  
+# read password files
+try:
+    f=file(options.usgs)
+    (account,passwd)=f.readline().split(' ')
+    print account,passwd
+    if passwd.endswith('\n'):
+	passwd=passwd[:-1]
+    usgs={'account':account,'passwd':passwd}
+    print usgs
+    f.close()
+except :
+    print "error with usgs password file"
+    sys.exit(-2)
+
+if options.proxy != None :
+    try:
+	f=file(options.proxy)
+	(account,passwd)=f.readline().split(' ')
+	if passwd.endswith('\n'):
+	    passwd=passwd[:-1]
+	proxy={'account':account,'passwd':passwd}
+	address=f.readline()
+	if address.endswith('\n'):
+	    address=address[:-1]
+	port=f.readline()
+	if port.endswith('\n'):
+	    port=port[:-1]
+	proxy={'port':port}
+	f.close()
+    except :
+	print "error with proxy password file"
+	sys.exit(-3)
+
 ############Telechargement des produits par scene
 if options.option=='scene':
     produit='LC8'
@@ -155,31 +191,7 @@ if options.option=='scene':
     path=options.scene[0:3]
     row=options.scene[3:6]
 
-    # read password files
-    try:
-	f=file(options.usgs)
-	(account,passwd)=f.readline().split(' ')
-	print account,passwd
-	if passwd.endswith('\n'):
-	    passwd=passwd[:-1]
-	usgs={'account':account,'passwd':passwd}
-	print usgs
-	f.close()
-    except :
-	print "error with usgs password file"
-	sys.exit(-2)
 
-    if options.proxy != None :
-	try:
-	    f=file(options.proxy)
-	    (account,passwd)=f.readline().split(' ')
-	    if passwd.endswith('\n'):
-		passwd=passwd[:-1]
-	    proxy={'account':account,'passwd':passwd}
-	    f.close()
-	except :
-	    print "error with proxy password file"
-	    sys.exit(-3)
 	    
     rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)
     print rep_scene
@@ -220,12 +232,15 @@ if options.option=='liste':
 	if nom_prod.startswith('LC8'):repert='4923'
         if nom_prod.startswith('LE7'):repert='3373'
  
-	if not os.path.exists(rep+'/'+site):
+	if not os.path.exists(rep+'/SITES/'+site):
 	    os.mkdir(rep+'/SITES/'+site)
 	url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
 	try:
-	    connect_earthexplorer_no_proxy()
-	    #connect_earthexplorer_proxy()
-	    downloadChunks(url,rep+'/'+site,nom_prod+'.tgz')
+	    if options.proxy!=None :
+	       connect_earthexplorer_proxy(proxy,usgs)
+	    else:
+	       connect_earthexplorer_no_proxy(usgs)
+
+	    downloadChunks(url,rep+'/SITES/'+site,nom_prod+'.tgz')
 	except TypeError:
 	    print 'produit %s non trouve'%nom_prod

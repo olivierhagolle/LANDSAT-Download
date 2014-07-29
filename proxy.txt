@@ -1,2 +1,3 @@
 Me Secret
-http://aaa.bb.cc
+proxy-http1.cnes.fr
+8050
