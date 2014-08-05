@@ -1,7 +1,7 @@
 LANDSAT-Download
 ================
 
-The routine provided below enables to automatically download LANDSAT data, using the current (April 2014) version of EartExplorer.
+The routine provided below enables to automatically download LANDSAT data, using the current (April 2014) version of EarthExplorer system.
 
 
 It works for LANDSAT 8 and LANDSAT 5&7, but needs that the data be already online. It seems to be systematically the case for LANDSAT 8, but for the older LANDSAT, it may be necessary to first order for the production of L1T products, on the earthexplorer site http://earthexplorer.usgs.gov. And of course, you will need to have an accont and password on the Earthexplorer website, to store on the usgs.txt file. If you have an access through a proxy, you might try the -p option. it works through CNES proxy at least but was only tested there.
@@ -24,7 +24,7 @@ with a file list2_landsat8.txt as provide below (the landsat references must exi
 
 The usgs.txt must contain your username and password on the same line separated by a blank.
 
-The files will be downloaded to /tmp/Landsat. 
+The files will be downloaded to /tmp/Landsat, unless you change the default folder with --output option
 
 To see all the options : 
        ` download_landsat_scene.py -h`
