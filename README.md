@@ -10,22 +10,22 @@ This routine may be used in two ways :
 
 - by providing the WRS-2 coordinates of the LANDSAT scene, for instance, (198,030) for Toulouse. And, as LANDSAT passes every 16 days, you also have to provide with the -d option, the exact value of a LANDSAT overpass. Example:
 
-`        python download_landsat_scene.py -o scene -t LC8 -a 2013 -d 113 -f 365 -s 199030 -u usgs.txt`
+`       download_landsat_scene.py -o scene -a 2013 -d 106 -f 365 -s 181025 -u ../usgs.txt -p ../proxy.txt --output /mnt/data/LANDSAT8/N0/`
 
 - by providing a list of products to download, as in the example below:
 
-`        python download_landsat_scene.py -o liste -l list2_landsat8.txt -u usgs.txt`
+`       python download_landsat_scene.py -o liste -l list2_landsat8.txt -u usgs.txt --output /mnt/data/LANDSAT8/N0/`
 
 with a file list2_landsat8.txt as provide below (the landsat references must exist in the earthexplorer catalog) :
 
- `        Tunisie LC81910352013160LGN00`
+`       Tunisie LC81910352013160LGN00`
 
-  `       Tunisie LC81910362013160LGN00`
+`       Tunisie LC81910362013160LGN00`
 
 The usgs.txt must contain your username and password on the same line separated by a blank.
 
-The files will be downloaded to /tmp/Landsat, unless you change the default folder with --output option
+If you do not use the --ouput option, the files will be downloaded to /tmp/Landsat (provided it exists)
 
 To see all the options : 
-       ` download_landsat_scene.py -h`
+`       download_landsat_scene.py -h`
 
