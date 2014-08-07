@@ -21,7 +21,6 @@ class OptionParser (optparse.OptionParser):
  
 def connect_earthexplorer_proxy(proxy_info,usgs):
     
-     print "proxy_info=", proxy_info
      # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
      proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
      "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
@@ -29,7 +28,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
  
      # installation
      urllib2.install_opener(opener)
- 
+
      # parametres de connection
      params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd']))
  
@@ -182,11 +181,9 @@ if not os.path.exists(rep):
 try:
     f=file(options.usgs)
     (account,passwd)=f.readline().split(' ')
-    print account,passwd
     if passwd.endswith('\n'):
 	passwd=passwd[:-1]
     usgs={'account':account,'passwd':passwd}
-    print usgs
     f.close()
 except :
     print "error with usgs password file"
