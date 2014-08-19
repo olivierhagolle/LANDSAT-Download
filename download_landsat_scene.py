@@ -30,7 +30,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
  
      # installation
      urllib2.install_opener(opener)
- 
+
      # parametres de connection
      params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd']))
  
@@ -216,7 +216,6 @@ if not os.path.exists(rep):
 try:
     f=file(options.usgs)
     (account,passwd)=f.readline().split(' ')
-    print account,passwd
     if passwd.endswith('\n'):
 	passwd=passwd[:-1]
     usgs={'account':account,'passwd':passwd}
