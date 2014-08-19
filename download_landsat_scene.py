@@ -5,8 +5,10 @@
     Landsat Data download from earth explorer
     Incorporates jake-Brinkmann improvements
 """
-import os,sys,math,urllib2,urllib,time
+import os,sys,math,urllib2,urllib,time,math
 import optparse
+import datetime
+
 ###########################################################################
 class OptionParser (optparse.OptionParser):
  
@@ -17,11 +19,10 @@ class OptionParser (optparse.OptionParser):
       if getattr(self.values, option.dest) is None:
           self.error("%s option not supplied" % option)
  
-#############################"Connection à Earth explorer sans proxy
+#############################"Connection to Earth explorer with proxy
  
 def connect_earthexplorer_proxy(proxy_info,usgs):
     
-     print "proxy_info=", proxy_info
      # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
      proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
      "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
@@ -47,7 +48,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
      return
  
  
-#############################"Connection à Earth explorer sans proxy
+#############################"Connection to Earth explorer without proxy
  
 def connect_earthexplorer_no_proxy(usgs):
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
@@ -121,10 +122,47 @@ def downloadChunks(url,rep,nom_fic):
     return False
  
   return rep,nom_fic
+
+
+##################
+def cycle_day(path):
+    """ provides the day in cycle given the path number
+    """
+    cycle_day_path1  = 5
+    cycle_day_increment = 7
+    nb_days_after_day1=cycle_day_path1+cycle_day_increment*(path-1)
  
+    cycle_day_path=math.fmod(nb_days_after_day1,16)
+    if path>=98: #change date line
+	cycle_day_path+=1
+    return(cycle_day_path)
+
+
+
+###################
+def next_overpass(date1,path,sat):
+    """ provides the next overpass for path after date1
+    """
+    date0_L5 = datetime.datetime(1985,5,4)
+    date0_L7 = datetime.datetime(1999,1,11)
+    date0_L8 = datetime.datetime(2013,5,1)
+    if sat=='LT5':
+	date0=date0_L5
+    elif sat=='LE7':
+	date0=date0_L7
+    elif sat=='LC8':
+	date0=date0_L8
+    next_day=math.fmod((date1-date0).days-cycle_day(path)+1,16)
+    if next_day!=0:
+	date_overpass=date1+datetime.timedelta(16-next_day)
+    else:
+	date_overpass=date1
+    return(date_overpass)
+
+
 ######################################################################################
-###############main
-#################################################################################
+###############                       main                    ########################
+######################################################################################
  
 ################Lecture des arguments
 if len(sys.argv) == 1:
@@ -144,12 +182,10 @@ else:
 			help="liste filename",default=None)
         parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
 			help="coordonnees WRS2 de la scene (ex 198030)", default=None)
-	parser.add_option("-a", "--annee", dest="annee", action="store", type="int", \
-			help="annee")
-	parser.add_option("-d", "--doy_deb", dest="doy_deb", action="store", type="int", \
-			help="first landsat day of year for tile ")
-	parser.add_option("-f","--doy_fin", dest="doy_fin", action="store", type="int", \
-			help="last day of year for tile")
+	parser.add_option("-d", "--start_date", dest="start_date", action="store", type="string", \
+			help="start date, fmt('20131223')")
+	parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
+			help="end date, fmt('20131223')")
 	parser.add_option("-u","--usgs_passwd", dest="usgs", action="store", type="string", \
 			help="USGS earthexplorer account and password file")
 	parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
@@ -161,8 +197,6 @@ else:
 	parser.check_required("-o")
 	if options.option=='scene':
 	    parser.check_required("-d")
-	    parser.check_required("-a")
-	    parser.check_required("-f")
 	    parser.check_required("-s")
 	    parser.check_required("-u")
 	    
@@ -186,11 +220,12 @@ try:
     if passwd.endswith('\n'):
 	passwd=passwd[:-1]
     usgs={'account':account,'passwd':passwd}
-    print usgs
     f.close()
 except :
     print "error with usgs password file"
     sys.exit(-2)
+
+			
 
 if options.proxy != None :
     try:
@@ -209,27 +244,40 @@ if options.proxy != None :
     except :
 	print "error with proxy password file"
 	sys.exit(-3)
+	
 ############Telechargement des produits par scene
 if options.option=='scene':
     produit='LC8'
     station='LGN'
     path=options.scene[0:3]
     row=options.scene[3:6]
+    
+    year_start =int(options.start_date[0:4])
+    month_start=int(options.start_date[4:6])
+    day_start  =int(options.start_date[6:8])
+    date_start=datetime.datetime(year_start,month_start, day_start)
 
+    if options.end_date!= None:
+	    year_end =int(options.end_date[0:4])
+	    month_end=int(options.end_date[4:6])
+	    day_end  =int(options.end_date[6:8])
+	    date_end =datetime.datetime(year_end,month_end, day_end)
+    else:
+	date_end=datetime.datetime.now()
 
-	    
     rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)
     print rep_scene
     if not(os.path.exists(rep_scene)):
 	os.makedirs(rep_scene)
     if produit.startswith('LC8'):repert='4923'
     if produit.startswith('LE7'):repert='3373'
+
+    curr_date=next_overpass(date_start,int(path),produit)
  
-    doy=options.doy_deb
- 
-    while (doy < options.doy_fin) and (doy < 366) :
-       date_asc="%04d%03d"%(options.annee,doy)
-       doy+=16
+    while (curr_date < date_end) :
+       date_asc=curr_date.strftime("%Y%j")
+       print date_asc
+       curr_date=curr_date+datetime.timedelta(16)
        for version in ['00','01']:
 	   nom_prod=produit+options.scene+date_asc+station+version
 	   url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
@@ -242,9 +290,9 @@ if options.option=='scene':
 	       try:
 		   downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
 	       except TypeError:
-		  print '   produit %s non trouve'%nom_prod
+		  print '   product %s not found'%nom_prod
 	   else :
-	       print '   produit %s deja telecharge'%nom_prod
+	       print '   product %s already downloaded'%nom_prod
 	       break
  
 ############Telechargement par liste
