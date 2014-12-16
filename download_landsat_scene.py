@@ -6,6 +6,7 @@
     Incorporates jake-Brinkmann improvements
 """
 import os,sys,math,urllib2,urllib,time,math
+import subprocess
 import optparse
 import datetime
 
@@ -61,6 +62,7 @@ def connect_earthexplorer_no_proxy(usgs):
 	print "Authentification failed"
 	sys.exit(-1)
     return
+
 #############################
  
 def sizeof_fmt(num):
@@ -159,6 +161,17 @@ def next_overpass(date1,path,sat):
 	date_overpass=date1
     return(date_overpass)
 
+#############################"Unzip tgz file
+	
+def unzipimage(tgzfile,outputdir):	
+    if (os.path.exists(outputdir+'/'+tgzfile+'.tgz')):
+        print "unzipping..."
+        try:
+            subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)
+        except TypeError:
+            print 'Failed to unzip %s'%tgzfile
+        os.remove(outputdir+'/'+tgzfile+'.tgz')		
+
 
 ######################################################################################
 ###############                       main                    ########################
@@ -192,6 +205,10 @@ else:
 			help="Proxy account and password file")
 	parser.add_option("--output", dest="output", action="store", type="string", \
 			help="Where to download files",default='/tmp/LANDSAT')
+	parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
+			help="unzip", default=None)		
+	parser.add_option("-b","--bird", dest="bird", action="store", type="choice", \
+			help="Which product are you looking for.", choices=['LT5','LE7', 'LC8'], default='LC8')				
  
 	(options, args) = parser.parse_args()
 	parser.check_required("-o")
@@ -246,8 +263,7 @@ if options.proxy != None :
 	
 ############Telechargement des produits par scene
 if options.option=='scene':
-    produit='LC8'
-    station='LGN'
+    produit=options.bird
     path=options.scene[0:3]
     row=options.scene[3:6]
     
@@ -264,36 +280,52 @@ if options.option=='scene':
     else:
 	date_end=datetime.datetime.now()
 
-    rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)
+    # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
+    rep_scene="%s"%(rep)	#Modified vbnunes
     print rep_scene
     if not(os.path.exists(rep_scene)):
 	os.makedirs(rep_scene)
-    if produit.startswith('LC8'):repert='4923'
-    if produit.startswith('LE7'):repert='3373'
+    if produit.startswith('LC8'):
+        repert='4923'
+        stations=['LGN']
+    if produit.startswith('LE7'):
+        repert='3372'
+        stations=['EDC','SGS','AGS']
+    if produit.startswith('LT5'):
+        repert='3119'
+        stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA']		
 
     curr_date=next_overpass(date_start,int(path),produit)
  
     while (curr_date < date_end) :
-       date_asc=curr_date.strftime("%Y%j")
-       print date_asc
-       curr_date=curr_date+datetime.timedelta(16)
-       for version in ['00','01']:
-	   nom_prod=produit+options.scene+date_asc+station+version
-	   url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
-	   print url
-	   if not(os.path.exists(rep_scene+'/'+nom_prod+'.tgz')):
-	       if options.proxy!=None :
-		       connect_earthexplorer_proxy(proxy,usgs)
-	       else:
-		       connect_earthexplorer_no_proxy(usgs)
-	       try:
-		   downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
-	       except TypeError:
-		  print '   product %s not found'%nom_prod
-	   else :
-	       print '   product %s already downloaded'%nom_prod
-	       break
- 
+        date_asc=curr_date.strftime("%Y%j")
+        notfound = False		
+        print 'Searching for images on (julian date)' + date_asc + ' ...'
+        curr_date=curr_date+datetime.timedelta(16)
+        for station in stations:
+            for version in ['00','01','02']:
+                nom_prod=produit+options.scene+date_asc+station+version
+                url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
+                # print url
+                if os.path.exists(rep_scene+'/'+nom_prod+'.tgz') or os.path.exists(rep_scene+'/'+nom_prod):
+                    print '   product %s already downloaded'%nom_prod
+                    if options.unzip!= None:
+                        unzipimage(nom_prod,rep_scene)				
+                    break				
+	            # if not(os.path.exists(rep_scene+'/'+nom_prod+'.tgz')) and not(os.path.exists(rep_scene+'/'+nom_prod)):
+                if options.proxy!=None:
+                    connect_earthexplorer_proxy(proxy,usgs)
+                else:
+                    connect_earthexplorer_no_proxy(usgs)
+                try:
+                    downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
+                except TypeError:
+                    print '   product %s not found'%nom_prod
+                    notfound = True
+                if notfound != True and options.unzip!= None:
+                    unzipimage(nom_prod,rep_scene)		  
+	
+	   
 ############Telechargement par liste
 if options.option=='liste':
     with file(options.fic_liste) as f:
