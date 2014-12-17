@@ -184,7 +184,8 @@ if len(sys.argv) == 1:
 	print "     Aide : ", prog, " --help"
 	print "        ou : ", prog, " -h"
 	print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
-	print "example (liste): python %s -o liste -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]
+	print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0] 
+	print "example (liste): python %s -o liste -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	sys.exit(-1)
 else:
 	usage = "usage: %prog [options] "
@@ -203,12 +204,12 @@ else:
 			help="USGS earthexplorer account and password file")
 	parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
 			help="Proxy account and password file")
-	parser.add_option("--output", dest="output", action="store", type="string", \
-			help="Where to download files",default='/tmp/LANDSAT')
 	parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
-			help="unzip", default=None)		
+			help="Unzip downloaded tgz file", default=None)		
 	parser.add_option("-b","--bird", dest="bird", action="store", type="choice", \
-			help="Which product are you looking for.", choices=['LT5','LE7', 'LC8'], default='LC8')				
+			help="Which product are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
+	parser.add_option("--output", dest="output", action="store", type="string", \
+			help="Where to download files",default='/tmp/LANDSAT')			
  
 	(options, args) = parser.parse_args()
 	parser.check_required("-o")
@@ -293,14 +294,14 @@ if options.option=='scene':
         stations=['EDC','SGS','AGS']
     if produit.startswith('LT5'):
         repert='3119'
-        stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA']		
+        stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
 
     curr_date=next_overpass(date_start,int(path),produit)
  
     while (curr_date < date_end) :
         date_asc=curr_date.strftime("%Y%j")
         notfound = False		
-        print 'Searching for images on (julian date)' + date_asc + ' ...'
+        print 'Searching for images on (julian date): ' + date_asc + '...'
         curr_date=curr_date+datetime.timedelta(16)
         for station in stations:
             for version in ['00','01','02']:
