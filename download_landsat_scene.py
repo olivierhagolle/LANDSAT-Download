@@ -5,7 +5,7 @@
     Landsat Data download from earth explorer
     Incorporates jake-Brinkmann improvements
 """
-import os,sys,math,urllib2,urllib,time,math
+import os,sys,math,urllib2,urllib,time,math,shutil
 import subprocess
 import optparse
 import datetime
@@ -23,7 +23,7 @@ class OptionParser (optparse.OptionParser):
 #############################"Connection to Earth explorer with proxy
  
 def connect_earthexplorer_proxy(proxy_info,usgs):
-    
+     print "Establishing connection to Earthexplorer with proxy..."    
      # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
      proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
      "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
@@ -52,6 +52,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
 #############################"Connection to Earth explorer without proxy
  
 def connect_earthexplorer_no_proxy(usgs):
+    print "Establishing connection to Earthexplorer..."
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
     urllib2.install_opener(opener)
     params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd']))
@@ -163,14 +164,45 @@ def next_overpass(date1,path,sat):
 
 #############################"Unzip tgz file
 	
-def unzipimage(tgzfile,outputdir):	
+def unzipimage(tgzfile,outputdir):
+    success=0
     if (os.path.exists(outputdir+'/'+tgzfile+'.tgz')):
-        print "unzipping..."
+        print "\nunzipping..."
         try:
             subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)
+            success=1
         except TypeError:
             print 'Failed to unzip %s'%tgzfile
-        os.remove(outputdir+'/'+tgzfile+'.tgz')		
+        os.remove(outputdir+'/'+tgzfile+'.tgz')
+    return success
+
+#############################"Read image metadata		
+def read_cloudcover_in_metadata(image_path):
+    output_list=[]
+    fields = ['CLOUD_COVER']
+    cloud_cover=0
+    imagename=os.path.basename(os.path.normpath(image_path))
+    metadatafile= os.path.join(image_path,imagename+'_MTL.txt')
+    metadata = open(metadatafile, 'r')
+    # metadata.replace('\r','')	
+    for line in metadata:
+        line = line.replace('\r', '')	
+        for f in fields:
+            if line.find(f)>=0:
+                lineval = line[line.find('= ')+2:]
+                cloud_cover=lineval.replace('\n','')
+    return float(cloud_cover)
+
+#############################"Check cloud cover limit
+	
+def check_cloud_limit(imagepath,limit):
+    removed=0
+    cloudcover=read_cloudcover_in_metadata(imagepath)
+    if cloudcover>limit:
+        shutil.rmtree(imagepath)
+        print "Image was removed because the cloud cover value of " + str(cloudcover) + " exceeded the limit defined by the user!"	
+        removed=1
+    return removed		
 
 
 ######################################################################################
@@ -200,6 +232,8 @@ else:
 			help="start date, fmt('20131223')")
 	parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
 			help="end date, fmt('20131223')")
+	parser.add_option("-c","--cloudcover", dest="clouds", action="store", type="float", \
+			help="Set a limit to the cloud cover of the image", default=None)			
 	parser.add_option("-u","--usgs_passwd", dest="usgs", action="store", type="string", \
 			help="USGS earthexplorer account and password file")
 	parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
@@ -280,6 +314,11 @@ if options.option=='scene':
 	    date_end =datetime.datetime(year_end,month_end, day_end)
     else:
 	date_end=datetime.datetime.now()
+	
+    if options.proxy!=None:
+        connect_earthexplorer_proxy(proxy,usgs)
+    else:
+        connect_earthexplorer_no_proxy(usgs)	
 
     # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
     rep_scene="%s"%(rep)	#Modified vbnunes
@@ -296,9 +335,11 @@ if options.option=='scene':
         repert='3119'
         stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
 
+    check=1
+		
     curr_date=next_overpass(date_start,int(path),produit)
  
-    while (curr_date < date_end) :
+    while (curr_date < date_end) and check==1:
         date_asc=curr_date.strftime("%Y%j")
         notfound = False		
         print 'Searching for images on (julian date): ' + date_asc + '...'
@@ -306,25 +347,28 @@ if options.option=='scene':
         for station in stations:
             for version in ['00','01','02']:
                 nom_prod=produit+options.scene+date_asc+station+version
+                tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
+                lsdestdir=os.path.join(rep_scene,nom_prod)				
                 url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
                 # print url
-                if os.path.exists(rep_scene+'/'+nom_prod+'.tgz') or os.path.exists(rep_scene+'/'+nom_prod):
+                if os.path.exists(lsdestdir):
+                    print '   product %s already downloaded and unzipped'%nom_prod
+                elif os.path.isfile(tgzfile):
                     print '   product %s already downloaded'%nom_prod
                     if options.unzip!= None:
-                        unzipimage(nom_prod,rep_scene)				
-                    break				
-	            # if not(os.path.exists(rep_scene+'/'+nom_prod+'.tgz')) and not(os.path.exists(rep_scene+'/'+nom_prod)):
-                if options.proxy!=None:
-                    connect_earthexplorer_proxy(proxy,usgs)
+                        p=unzipimage(nom_prod,rep_scene)
+                        if p==1 and options.clouds!= None:					
+                            check=check_cloud_limit(lsdestdir,options.clouds)	
                 else:
-                    connect_earthexplorer_no_proxy(usgs)
-                try:
-                    downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
-                except TypeError:
-                    print '   product %s not found'%nom_prod
-                    notfound = True
-                if notfound != True and options.unzip!= None:
-                    unzipimage(nom_prod,rep_scene)		  
+                    try:
+                        downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
+                    except TypeError:
+                        print '   product %s not found'%nom_prod
+                        notfound = True
+                    if notfound != True and options.unzip!= None:
+                        p=unzipimage(nom_prod,rep_scene)
+                        if p==1 and options.clouds!= None:					
+                            check=check_cloud_limit(lsdestdir,options.clouds)
 	
 	   
 ############Telechargement par liste
