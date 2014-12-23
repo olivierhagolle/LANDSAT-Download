@@ -10,6 +10,7 @@ import subprocess
 import optparse
 import datetime
 
+
 ###########################################################################
 class OptionParser (optparse.OptionParser):
  
@@ -79,6 +80,7 @@ def downloadChunks(url,rep,nom_fic):
  
   try:
     req = urllib2.urlopen(url)
+    print "DEBUG " + req	
     #taille du fichier
     if (req.info().gettype()=='text/html'):
       print "erreur : le fichier est au format html"
@@ -169,7 +171,9 @@ def unzipimage(tgzfile,outputdir):
     if (os.path.exists(outputdir+'/'+tgzfile+'.tgz')):
         print "\nunzipping..."
         try:
-            subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)
+            subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)  #W32
+            # subprocess.call('mkdir '+ outputdir+'/'+tgzfile, shell=True)   #Unix			
+            # subprocess.call('tar zxvf '+outputdir+'/'+tgzfile+'.tgz -C '+ outputdir+'/'+tgzfile, shell=True)   #Unix
             success=1
         except TypeError:
             print 'Failed to unzip %s'%tgzfile
@@ -204,192 +208,211 @@ def check_cloud_limit(imagepath,limit):
         removed=1
     return removed		
 
+#############################"Write info to logfile
+	
+def log(location,info):
+    logfile = os.path.join(location,'log.txt')
+    log = open(logfile, 'w')
+    log.write('\n'+str(info))	
 
+	
 ######################################################################################
 ###############                       main                    ########################
 ######################################################################################
  
 ################Lecture des arguments
-if len(sys.argv) == 1:
-	prog = os.path.basename(sys.argv[0])
-	print '      '+sys.argv[0]+' [options]'
-	print "     Aide : ", prog, " --help"
-	print "        ou : ", prog, " -h"
-	print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
-	print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0] 
-	print "example (liste): python %s -o liste -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
-	sys.exit(-1)
-else:
-	usage = "usage: %prog [options] "
-	parser = OptionParser(usage=usage)
-        parser.add_option("-o", "--option", dest="option", action="store", type="choice", \
-			help="scene or liste", choices=['scene','liste'],default=None)
-	parser.add_option("-l", "--liste", dest="fic_liste", action="store", type="string", \
-			help="liste filename",default=None)
-        parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
-			help="coordonnees WRS2 de la scene (ex 198030)", default=None)
-	parser.add_option("-d", "--start_date", dest="start_date", action="store", type="string", \
-			help="start date, fmt('20131223')")
-	parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
-			help="end date, fmt('20131223')")
-	parser.add_option("-c","--cloudcover", dest="clouds", action="store", type="float", \
-			help="Set a limit to the cloud cover of the image", default=None)			
-	parser.add_option("-u","--usgs_passwd", dest="usgs", action="store", type="string", \
-			help="USGS earthexplorer account and password file")
-	parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
-			help="Proxy account and password file")
-	parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
-			help="Unzip downloaded tgz file", default=None)		
-	parser.add_option("-b","--bird", dest="bird", action="store", type="choice", \
-			help="Which product are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
-	parser.add_option("--output", dest="output", action="store", type="string", \
-			help="Where to download files",default='/tmp/LANDSAT')			
+def main():
+    variable1='Teste'
+    if len(sys.argv) == 1:
+	    prog = os.path.basename(sys.argv[0])
+	    print '      '+sys.argv[0]+' [options]'
+	    print "     Aide : ", prog, " --help"
+	    print "        ou : ", prog, " -h"
+	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0] 
+	    print "example (liste): python %s -o liste -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
+	    sys.exit(-1)
+    else:
+	    usage = "usage: %prog [options] "
+	    parser = OptionParser(usage=usage)
+            parser.add_option("-o", "--option", dest="option", action="store", type="choice", \
+			    help="scene or liste", choices=['scene','liste'],default=None)
+	    parser.add_option("-l", "--liste", dest="fic_liste", action="store", type="string", \
+			    help="liste filename",default=None)
+            parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
+			    help="coordonnees WRS2 de la scene (ex 198030)", default=None)
+	    parser.add_option("-d", "--start_date", dest="start_date", action="store", type="string", \
+			    help="start date, fmt('20131223')")
+	    parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
+			    help="end date, fmt('20131223')")
+	    parser.add_option("-c","--cloudcover", dest="clouds", action="store", type="float", \
+			    help="Set a limit to the cloud cover of the image", default=None)			
+	    parser.add_option("-u","--usgs_passwd", dest="usgs", action="store", type="string", \
+			    help="USGS earthexplorer account and password file")
+	    parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
+			    help="Proxy account and password file")
+	    parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
+			    help="Unzip downloaded tgz file", default=None)		
+	    parser.add_option("-b","--bird", dest="bird", action="store", type="choice", \
+			    help="Which product are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
+	    parser.add_option("--output", dest="output", action="store", type="string", \
+			    help="Where to download files",default='/tmp/LANDSAT')			
  
-	(options, args) = parser.parse_args()
-	parser.check_required("-o")
-	if options.option=='scene':
-	    parser.check_required("-d")
-	    parser.check_required("-s")
-	    parser.check_required("-u")
+	    (options, args) = parser.parse_args()
+	    parser.check_required("-o")
+	    if options.option=='scene':
+	        parser.check_required("-d")
+	        parser.check_required("-s")
+	        parser.check_required("-u")
 	    
-	elif options.option=='liste' :
-	    parser.check_required("-l")
-    	    parser.check_required("-u")
+	    elif options.option=='liste' :
+	        parser.check_required("-l")
+    	        parser.check_required("-u")
 
 
-rep=options.output
-if not os.path.exists(rep):
-    os.mkdir(rep)
-    if options.option=='liste':
-	if not os.path.exists(rep+'/LISTE'):
-	     os.mkdir(rep+'/LISTE')
+    rep=options.output
+    if not os.path.exists(rep):
+        os.mkdir(rep)
+        if options.option=='liste':
+	    if not os.path.exists(rep+'/LISTE'):
+	         os.mkdir(rep+'/LISTE')
  
-# read password files
-try:
-    f=file(options.usgs)
-    (account,passwd)=f.readline().split(' ')
-    if passwd.endswith('\n'):
-	passwd=passwd[:-1]
-    usgs={'account':account,'passwd':passwd}
-    f.close()
-except :
-    print "error with usgs password file"
-    sys.exit(-2)
+    # read password files
+    try:
+        f=file(options.usgs)
+        (account,passwd)=f.readline().split(' ')
+        if passwd.endswith('\n'):
+	    passwd=passwd[:-1]
+        usgs={'account':account,'passwd':passwd}
+        f.close()
+    except :
+        print "error with usgs password file"
+        sys.exit(-2)
 
 			
 
-if options.proxy != None :
-    try:
-	f=file(options.proxy)
-	(user,passwd)=f.readline().split(' ')
-	if passwd.endswith('\n'):
-	    passwd=passwd[:-1]
-	host=f.readline()
-	if host.endswith('\n'):
-	    host=host[:-1]
-	port=f.readline()
-	if port.endswith('\n'):
-	    port=port[:-1]
-	proxy={'user':user,'pass':passwd,'host':host,'port':port}
-	f.close()
-    except :
-	print "error with proxy password file"
-	sys.exit(-3)
+    if options.proxy != None :
+        try:
+	    f=file(options.proxy)
+	    (user,passwd)=f.readline().split(' ')
+	    if passwd.endswith('\n'):
+	        passwd=passwd[:-1]
+	    host=f.readline()
+	    if host.endswith('\n'):
+	        host=host[:-1]
+	    port=f.readline()
+	    if port.endswith('\n'):
+	        port=port[:-1]
+	    proxy={'user':user,'pass':passwd,'host':host,'port':port}
+	    f.close()
+        except :
+	    print "error with proxy password file"
+	    sys.exit(-3)
 	
-############Telechargement des produits par scene
-if options.option=='scene':
-    produit=options.bird
-    path=options.scene[0:3]
-    row=options.scene[3:6]
+###########Telechargement des produits par scene
+    if options.option=='scene':
+        produit=options.bird
+        path=options.scene[0:3]
+        row=options.scene[3:6]
     
-    year_start =int(options.start_date[0:4])
-    month_start=int(options.start_date[4:6])
-    day_start  =int(options.start_date[6:8])
-    date_start=datetime.datetime(year_start,month_start, day_start)
+        year_start =int(options.start_date[0:4])
+        month_start=int(options.start_date[4:6])
+        day_start  =int(options.start_date[6:8])
+        date_start=datetime.datetime(year_start,month_start, day_start)
+        global downloaded_ids		
+        downloaded_ids=[]
 
-    if options.end_date!= None:
-	    year_end =int(options.end_date[0:4])
-	    month_end=int(options.end_date[4:6])
-	    day_end  =int(options.end_date[6:8])
-	    date_end =datetime.datetime(year_end,month_end, day_end)
-    else:
-	date_end=datetime.datetime.now()
+        if options.end_date!= None:
+	        year_end =int(options.end_date[0:4])
+	        month_end=int(options.end_date[4:6])
+	        day_end  =int(options.end_date[6:8])
+	        date_end =datetime.datetime(year_end,month_end, day_end)
+        else:
+	    date_end=datetime.datetime.now()
 	
-    if options.proxy!=None:
-        connect_earthexplorer_proxy(proxy,usgs)
-    else:
-        connect_earthexplorer_no_proxy(usgs)	
+        if options.proxy!=None:
+            connect_earthexplorer_proxy(proxy,usgs)
+        else:
+            connect_earthexplorer_no_proxy(usgs)	
 
-    # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
-    rep_scene="%s"%(rep)	#Modified vbnunes
-    print rep_scene
-    if not(os.path.exists(rep_scene)):
-	os.makedirs(rep_scene)
-    if produit.startswith('LC8'):
-        repert='4923'
-        stations=['LGN']
-    if produit.startswith('LE7'):
-        repert='3372'
-        stations=['EDC','SGS','AGS']
-    if produit.startswith('LT5'):
-        repert='3119'
-        stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
+            # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
+        rep_scene="%s"%(rep)	#Modified vbnunes
+        # print rep_scene
+        if not(os.path.exists(rep_scene)):
+	    os.makedirs(rep_scene)
+        if produit.startswith('LC8'):
+            repert='4923'
+            stations=['LGN']
+        if produit.startswith('LE7'):
+            repert='3372'
+            stations=['EDC','SGS','AGS']
+        if produit.startswith('LT5'):
+            repert='3119'
+            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
 
-    check=1
+        check=1
 		
-    curr_date=next_overpass(date_start,int(path),produit)
+        curr_date=next_overpass(date_start,int(path),produit)
  
-    while (curr_date < date_end) and check==1:
-        date_asc=curr_date.strftime("%Y%j")
-        notfound = False		
-        print 'Searching for images on (julian date): ' + date_asc + '...'
-        curr_date=curr_date+datetime.timedelta(16)
-        for station in stations:
-            for version in ['00','01','02']:
-                nom_prod=produit+options.scene+date_asc+station+version
-                tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
-                lsdestdir=os.path.join(rep_scene,nom_prod)				
-                url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
-                # print url
-                if os.path.exists(lsdestdir):
-                    print '   product %s already downloaded and unzipped'%nom_prod
-                elif os.path.isfile(tgzfile):
-                    print '   product %s already downloaded'%nom_prod
-                    if options.unzip!= None:
-                        p=unzipimage(nom_prod,rep_scene)
-                        if p==1 and options.clouds!= None:					
-                            check=check_cloud_limit(lsdestdir,options.clouds)	
-                else:
-                    try:
-                        downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
-                    except TypeError:
-                        print '   product %s not found'%nom_prod
-                        notfound = True
-                    if notfound != True and options.unzip!= None:
-                        p=unzipimage(nom_prod,rep_scene)
-                        if p==1 and options.clouds!= None:					
-                            check=check_cloud_limit(lsdestdir,options.clouds)
-	
+        while (curr_date < date_end) and check==1:
+            date_asc=curr_date.strftime("%Y%j")
+            notfound = False		
+            print 'Searching for images on (julian date): ' + date_asc + '...'
+            curr_date=curr_date+datetime.timedelta(16)
+            for station in stations:
+                for version in ['00','01','02']:
+                    nom_prod=produit+options.scene+date_asc+station+version
+                    tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
+                    lsdestdir=os.path.join(rep_scene,nom_prod)				
+                    url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
+                        # print url
+                    if os.path.exists(lsdestdir):
+                        print '   product %s already downloaded and unzipped'%nom_prod
+                        downloaded_ids.append(nom_prod)					
+                    elif os.path.isfile(tgzfile):
+                        print '   product %s already downloaded'%nom_prod
+                        if options.unzip!= None:
+                            p=unzipimage(nom_prod,rep_scene)
+                            if p==1 and options.clouds!= None:					
+                                check=check_cloud_limit(lsdestdir,options.clouds)
+                                if check==0:
+                                    downloaded_ids.append(nom_prod)							
+                    else:
+                        try:
+                            downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
+                        except TypeError:
+                            print '   product %s not found'%nom_prod
+                            notfound = True
+                        if notfound != True and options.unzip!= None:
+                            p=unzipimage(nom_prod,rep_scene)
+                            if p==1 and options.clouds!= None:					
+                                check=check_cloud_limit(lsdestdir,options.clouds)
+                                if check==0:
+                                    downloaded_ids.append(nom_prod)								
+        log(rep,downloaded_ids)
 	   
-############Telechargement par liste
-if options.option=='liste':
-    with file(options.fic_liste) as f:
-	lignes=f.readlines()
-    for ligne in lignes:
-	(site,nom_prod)=ligne.split(' ')
-	nom_prod=nom_prod.strip()
-	if nom_prod.startswith('LC8'):repert='4923'
-        if nom_prod.startswith('LE7'):repert='3373'
+###########Telechargement par liste
+    if options.option=='liste':
+        with file(options.fic_liste) as f:
+	    lignes=f.readlines()
+        for ligne in lignes:
+	    (site,nom_prod)=ligne.split(' ')
+	    nom_prod=nom_prod.strip()
+	    if nom_prod.startswith('LC8'):repert='4923'
+            if nom_prod.startswith('LE7'):repert='3373'
  
-	if not os.path.exists(rep+'/SITES/'+site):
-	    os.mkdir(rep+'/SITES/'+site)
-	url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
-	try:
-	    if options.proxy!=None :
-	       connect_earthexplorer_proxy(proxy,usgs)
-	    else:
-	       connect_earthexplorer_no_proxy(usgs)
+	    if not os.path.exists(rep+'/SITES/'+site):
+	        os.mkdir(rep+'/SITES/'+site)
+	    url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
+	    try:
+	        if options.proxy!=None :
+	           connect_earthexplorer_proxy(proxy,usgs)
+	        else:
+	           connect_earthexplorer_no_proxy(usgs)
 
-	    downloadChunks(url,rep+'/SITES/'+site,nom_prod+'.tgz')
-	except TypeError:
-	    print 'produit %s non trouve'%nom_prod
+	        downloadChunks(url,rep+'/SITES/'+site,nom_prod+'.tgz')
+	    except TypeError:
+	        print 'produit %s non trouve'%nom_prod
+
+if __name__ == "__main__":
+    main()
