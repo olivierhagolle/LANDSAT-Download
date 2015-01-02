@@ -80,7 +80,6 @@ def downloadChunks(url,rep,nom_fic):
  
   try:
     req = urllib2.urlopen(url)
-    print "DEBUG " + req	
     #taille du fichier
     if (req.info().gettype()=='text/html'):
       print "erreur : le fichier est au format html"
@@ -380,7 +379,7 @@ def main():
                     else:
                         try:
                             downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
-                        except TypeError:
+                        except:
                             print '   product %s not found'%nom_prod
                             notfound = True
                         if notfound != True and options.unzip!= None:
