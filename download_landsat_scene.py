@@ -367,7 +367,8 @@ def main():
                         # print url
                     if os.path.exists(lsdestdir):
                         print '   product %s already downloaded and unzipped'%nom_prod
-                        downloaded_ids.append(nom_prod)					
+                        downloaded_ids.append(nom_prod)
+                        check = 0						
                     elif os.path.isfile(tgzfile):
                         print '   product %s already downloaded'%nom_prod
                         if options.unzip!= None:
