@@ -151,16 +151,16 @@ def next_overpass(date1,path,sat):
     date0_L7 = datetime.datetime(1999,1,11)
     date0_L8 = datetime.datetime(2013,5,1)
     if sat=='LT5':
-	date0=date0_L5
+        date0=date0_L5
     elif sat=='LE7':
-	date0=date0_L7
+        date0=date0_L7
     elif sat=='LC8':
-	date0=date0_L8
+        date0=date0_L8
     next_day=math.fmod((date1-date0).days-cycle_day(path)+1,16)
     if next_day!=0:
-	date_overpass=date1+datetime.timedelta(16-next_day)
+        date_overpass=date1+datetime.timedelta(16-next_day)
     else:
-	date_overpass=date1
+        date_overpass=date1
     return(date_overpass)
 
 #############################"Unzip tgz file
@@ -229,7 +229,7 @@ def main():
 	    print "        ou : ", prog, " -h"
 	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
 	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0] 
-	    print "example (liste): python %s -o liste -l /home/hagolle/DOCS/TAKE5/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
+	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
     else:
 	    usage = "usage: %prog [options] "
@@ -237,9 +237,9 @@ def main():
             parser.add_option("-o", "--option", dest="option", action="store", type="choice", \
 			    help="scene or liste", choices=['scene','liste'],default=None)
 	    parser.add_option("-l", "--liste", dest="fic_liste", action="store", type="string", \
-			    help="liste filename",default=None)
+			    help="list filename",default=None)
             parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
-			    help="coordonnees WRS2 de la scene (ex 198030)", default=None)
+			    help="WRS2 coordinates of scene (ex 198030)", default=None)
 	    parser.add_option("-d", "--start_date", dest="start_date", action="store", type="string", \
 			    help="start date, fmt('20131223')")
 	    parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
@@ -252,8 +252,8 @@ def main():
 			    help="Proxy account and password file")
 	    parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
 			    help="Unzip downloaded tgz file", default=None)		
-	    parser.add_option("-b","--bird", dest="bird", action="store", type="choice", \
-			    help="Which product are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
+	    parser.add_option("-b","--sat", dest="bird", action="store", type="choice", \
+			    help="Which satellite are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
 	    parser.add_option("--output", dest="output", action="store", type="string", \
 			    help="Where to download files",default='/tmp/LANDSAT')			
  
@@ -292,21 +292,21 @@ def main():
 
     if options.proxy != None :
         try:
-	    f=file(options.proxy)
-	    (user,passwd)=f.readline().split(' ')
-	    if passwd.endswith('\n'):
-	        passwd=passwd[:-1]
-	    host=f.readline()
-	    if host.endswith('\n'):
-	        host=host[:-1]
-	    port=f.readline()
-	    if port.endswith('\n'):
-	        port=port[:-1]
-	    proxy={'user':user,'pass':passwd,'host':host,'port':port}
-	    f.close()
+            f=file(options.proxy)
+            (user,passwd)=f.readline().split(' ')
+            if passwd.endswith('\n'):
+                passwd=passwd[:-1]
+            host=f.readline()
+            if host.endswith('\n'):
+                host=host[:-1]
+            port=f.readline()
+            if port.endswith('\n'):
+                port=port[:-1]
+            proxy={'user':user,'pass':passwd,'host':host,'port':port}
+            f.close()
         except :
-	    print "error with proxy password file"
-	    sys.exit(-3)
+            print "error with proxy password file"
+            sys.exit(-3)
 	
 ###########Telechargement des produits par scene
     if options.option=='scene':
@@ -334,11 +334,11 @@ def main():
         else:
             connect_earthexplorer_no_proxy(usgs)	
 
-            # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
-        rep_scene="%s"%(rep)	#Modified vbnunes
-        # print rep_scene
+        rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
+        #rep_scene="%s"%(rep)	#Modified vbnunes
+        print rep_scene
         if not(os.path.exists(rep_scene)):
-	    os.makedirs(rep_scene)
+            os.makedirs(rep_scene)
         if produit.startswith('LC8'):
             repert='4923'
             stations=['LGN']
@@ -397,9 +397,16 @@ def main():
 	    lignes=f.readlines()
         for ligne in lignes:
 	    (site,nom_prod)=ligne.split(' ')
-	    nom_prod=nom_prod.strip()
-	    if nom_prod.startswith('LC8'):repert='4923'
-            if nom_prod.startswith('LE7'):repert='3373'
+	    produit=nom_prod.strip()
+        if produit.startswith('LC8'):
+            repert='4923'
+            stations=['LGN']
+        if produit.startswith('LE7'):
+            repert='3372'
+            stations=['EDC','SGS','AGS']
+        if produit.startswith('LT5'):
+            repert='3119'
+            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
  
 	    if not os.path.exists(rep+'/SITES/'+site):
 	        os.mkdir(rep+'/SITES/'+site)
@@ -410,7 +417,7 @@ def main():
 	        else:
 	           connect_earthexplorer_no_proxy(usgs)
 
-	        downloadChunks(url,rep+'/SITES/'+site,nom_prod+'.tgz')
+	        downloadChunks(url,rep+'/SITES/'+site,produit+'.tgz')
 	    except TypeError:
 	        print 'produit %s non trouve'%nom_prod
 
