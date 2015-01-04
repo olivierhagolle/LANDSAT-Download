@@ -343,7 +343,7 @@ def main():
             repert='4923'
             stations=['LGN']
         if produit.startswith('LE7'):
-            repert='3372'
+            repert='3373'
             stations=['EDC','SGS','AGS']
         if produit.startswith('LT5'):
             repert='3119'
@@ -364,7 +364,7 @@ def main():
                     tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
                     lsdestdir=os.path.join(rep_scene,nom_prod)				
                     url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
-                        # print url
+                    print url
                     if os.path.exists(lsdestdir):
                         print '   product %s already downloaded and unzipped'%nom_prod
                         downloaded_ids.append(nom_prod)
@@ -402,7 +402,7 @@ def main():
             repert='4923'
             stations=['LGN']
         if produit.startswith('LE7'):
-            repert='3372'
+            repert='3373'
             stations=['EDC','SGS','AGS']
         if produit.startswith('LT5'):
             repert='3119'
