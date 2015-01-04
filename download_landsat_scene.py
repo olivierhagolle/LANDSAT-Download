@@ -344,7 +344,7 @@ def main():
             stations=['LGN']
         if produit.startswith('LE7'):
             repert='3373'
-            stations=['EDC','SGS','AGS']
+            stations=['EDC','SGS','AGS','ASN']
         if produit.startswith('LT5'):
             repert='3119'
             stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
