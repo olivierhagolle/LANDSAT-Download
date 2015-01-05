@@ -334,8 +334,8 @@ def main():
         else:
             connect_earthexplorer_no_proxy(usgs)	
 
-        rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
-        #rep_scene="%s"%(rep)	#Modified vbnunes
+        # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
+        rep_scene="%s"%(rep)	#Modified vbnunes
         print rep_scene
         if not(os.path.exists(rep_scene)):
             os.makedirs(rep_scene)
