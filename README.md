@@ -30,3 +30,6 @@ To see all the options :
 
 The nice progress bar was provided by Jake Brinkmann ( Thanks Jake !)
 
+Vascobnunes made large improvements, in term of peformances (connection to eathexplorer was included in the download loop !) and added options to automatically unzip data, and configuration for LANDSAT 5 and 7. (Thanks Vascobnunes !)
+
+
