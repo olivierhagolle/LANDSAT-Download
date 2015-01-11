@@ -32,13 +32,14 @@ The nice progress bar was provided by Jake Brinkmann ( Thanks Jake !)
 
 Vascobnunes made large improvements, in term of peformances (connection to eathexplorer was included in the download loop !) and added options to automatically unzip data, and configuration for LANDSAT 5 and 7. (Thanks Vascobnunes !)
 
-There is a difficulty with this code which is the necessity to know in advance the station where the product is received, the directory where it is stored, and the version of the product. If this si not known, there is a need to try the various possibilities, which takes some time. It is also not excluded that USGS might change these values from time to time.
+There is a difficulty with this code which is the necessity to know in advance the station where the product is received, the directory where it is stored, and the version of the product. If this si not known, there is a need to try the various possibiliyies, which takes some time. It is also not excluded that USGS might change these values from time to time.
 
 Here is what we found so far :
-| Satellite name | directory    | Stations | Versions |
-| LT5            |  3119        | 'GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS' | 0-1 |
-| LE7            |  3373  |'EDC','SGS','AGS','ASN'| 0-1 |
-| LT8            |  4923        | 'LGN'| 0-5|
+
+| Satellite name | directory    | Stations                                       | Versions |
+| LT5            |  3119        | GLC,ASA,KIR,MOR,KHC,PAC,KIS,CHM,LGS,MGR,COA,MPS|   0-1    |
+| LE7            |  3373,3372   |'EDC','SGS','AGS','ASN'                         |   0-1    |
+| LT8            |  4923        | 'LGN'                                          |   0-5    |
 
 
 If the configuration we provide by default does not work, you may provide the directory ans station on the command line, using options --dir and --station
