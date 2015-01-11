@@ -37,8 +37,11 @@ There is a difficulty with this code which is the necessity to know in advance t
 Here is what we found so far :
 
 | Satellite name | directory    | Stations                                       | Versions |
+
 | LT5            |  3119        | GLC,ASA,KIR,MOR,KHC,PAC,KIS,CHM,LGS,MGR,COA,MPS|   0-1    |
+
 | LE7            |  3373,3372   |'EDC','SGS','AGS','ASN'                         |   0-1    |
+
 | LT8            |  4923        | 'LGN'                                          |   0-5    |
 
 
