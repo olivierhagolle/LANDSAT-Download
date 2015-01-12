@@ -228,60 +228,67 @@ def main():
 	    print "     Aide : ", prog, " --help"
 	    print "        ou : ", prog, " -h"
 	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0] 
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
+        print "example (scene): python %s -b LE7 -o scene -d 20141201 -f 20141231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
     else:
-	    usage = "usage: %prog [options] "
-	    parser = OptionParser(usage=usage)
-            parser.add_option("-o", "--option", dest="option", action="store", type="choice", \
+        usage = "usage: %prog [options] "
+        parser = OptionParser(usage=usage)
+        parser.add_option("-o", "--option", dest="option", action="store", type="choice", \
 			    help="scene or liste", choices=['scene','liste'],default=None)
-	    parser.add_option("-l", "--liste", dest="fic_liste", action="store", type="string", \
+        parser.add_option("-l", "--liste", dest="fic_liste", action="store", type="string", \
 			    help="list filename",default=None)
-            parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
+        parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
 			    help="WRS2 coordinates of scene (ex 198030)", default=None)
-	    parser.add_option("-d", "--start_date", dest="start_date", action="store", type="string", \
+        parser.add_option("-d", "--start_date", dest="start_date", action="store", type="string", \
 			    help="start date, fmt('20131223')")
-	    parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
+        parser.add_option("-f","--end_date", dest="end_date", action="store", type="string", \
 			    help="end date, fmt('20131223')")
-	    parser.add_option("-c","--cloudcover", dest="clouds", action="store", type="float", \
+        parser.add_option("-c","--cloudcover", dest="clouds", action="store", type="float", \
 			    help="Set a limit to the cloud cover of the image", default=None)			
-	    parser.add_option("-u","--usgs_passwd", dest="usgs", action="store", type="string", \
+        parser.add_option("-u","--usgs_passwd", dest="usgs", action="store", type="string", \
 			    help="USGS earthexplorer account and password file")
-	    parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
-			    help="Proxy account and password file")
-	    parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
+        parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
+                help="Proxy account and password file")
+        parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
 			    help="Unzip downloaded tgz file", default=None)		
-	    parser.add_option("-b","--sat", dest="bird", action="store", type="choice", \
+        parser.add_option("-b","--sat", dest="bird", action="store", type="choice", \
 			    help="Which satellite are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
-	    parser.add_option("--output", dest="output", action="store", type="string", \
+        parser.add_option("--output", dest="output", action="store", type="string", \
 			    help="Where to download files",default='/tmp/LANDSAT')			
- 
-	    (options, args) = parser.parse_args()
-	    parser.check_required("-o")
-	    if options.option=='scene':
+        parser.add_option("--dir", dest="dir", action="store", type="string", \
+			    help="Dir number where files  are stored at USGS",default=None)
+        parser.add_option("--station", dest="station", action="store", type="string", \
+			    help="Station acronym (3 letters) of the receiving station where the file is downloaded",default=None)			
+
+
+
+        (options, args) = parser.parse_args()
+        parser.check_required("-o")
+        if options.option=='scene':
 	        parser.check_required("-d")
 	        parser.check_required("-s")
 	        parser.check_required("-u")
 	    
-	    elif options.option=='liste' :
+        elif options.option=='liste' :
 	        parser.check_required("-l")
     	        parser.check_required("-u")
 
-
+    print options.station, options.dir
     rep=options.output
     if not os.path.exists(rep):
         os.mkdir(rep)
         if options.option=='liste':
-	    if not os.path.exists(rep+'/LISTE'):
-	         os.mkdir(rep+'/LISTE')
+            if not os.path.exists(rep+'/LISTE'):
+                os.mkdir(rep+'/LISTE')
  
     # read password files
     try:
         f=file(options.usgs)
         (account,passwd)=f.readline().split(' ')
         if passwd.endswith('\n'):
-	    passwd=passwd[:-1]
+            passwd=passwd[:-1]
         usgs={'account':account,'passwd':passwd}
         f.close()
     except :
@@ -344,11 +351,16 @@ def main():
             stations=['LGN']
         if produit.startswith('LE7'):
             repert='3373'
-            stations=['EDC','SGS','AGS','ASN']
+            stations=['EDC','SGS','AGS','ASN','SG1']
         if produit.startswith('LT5'):
             repert='3119'
             stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
-
+        
+        if options.station !=None:
+            stations=[options.station]
+        if options.dir !=None:
+            repert=options.dir
+            
         check=1
 		
         curr_date=next_overpass(date_start,int(path),produit)
@@ -402,8 +414,8 @@ def main():
             repert='4923'
             stations=['LGN']
         if produit.startswith('LE7'):
-            repert='3373'
-            stations=['EDC','SGS','AGS']
+            repert='3372'
+            stations=['EDC','SGS','AGS','ASN','SG1']
         if produit.startswith('LT5'):
             repert='3119'
             stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
