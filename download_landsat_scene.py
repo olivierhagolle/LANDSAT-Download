@@ -170,9 +170,11 @@ def unzipimage(tgzfile,outputdir):
     if (os.path.exists(outputdir+'/'+tgzfile+'.tgz')):
         print "\nunzipping..."
         try:
-            subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)  #W32
-            # subprocess.call('mkdir '+ outputdir+'/'+tgzfile, shell=True)   #Unix			
-            # subprocess.call('tar zxvf '+outputdir+'/'+tgzfile+'.tgz -C '+ outputdir+'/'+tgzfile, shell=True)   #Unix
+            if sys.platform.startswith('linux'):
+                subprocess.call('mkdir '+ outputdir+'/'+tgzfile, shell=True)   #Unix			
+                subprocess.call('tar zxvf '+outputdir+'/'+tgzfile+'.tgz -C '+ outputdir+'/'+tgzfile, shell=True)   #Unix
+            elif sys.platform.startswith('win'):
+                subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)  #W32
             success=1
         except TypeError:
             print 'Failed to unzip %s'%tgzfile
