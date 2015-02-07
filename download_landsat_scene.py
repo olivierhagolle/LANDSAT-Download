@@ -170,9 +170,11 @@ def unzipimage(tgzfile,outputdir):
     if (os.path.exists(outputdir+'/'+tgzfile+'.tgz')):
         print "\nunzipping..."
         try:
-            subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)  #W32
-            # subprocess.call('mkdir '+ outputdir+'/'+tgzfile, shell=True)   #Unix			
-            # subprocess.call('tar zxvf '+outputdir+'/'+tgzfile+'.tgz -C '+ outputdir+'/'+tgzfile, shell=True)   #Unix
+            if sys.platform.startswith('linux'):
+                subprocess.call('mkdir '+ outputdir+'/'+tgzfile, shell=True)   #Unix			
+                subprocess.call('tar zxvf '+outputdir+'/'+tgzfile+'.tgz -C '+ outputdir+'/'+tgzfile, shell=True)   #Unix
+            elif sys.platform.startswith('win'):
+                subprocess.call('tartool '+outputdir+'/'+tgzfile+'.tgz '+ outputdir+'/'+tgzfile, shell=True)  #W32
             success=1
         except TypeError:
             print 'Failed to unzip %s'%tgzfile
@@ -229,7 +231,7 @@ def main():
 	    print "        ou : ", prog, " -h"
 	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
 	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
-        print "example (scene): python %s -b LE7 -o scene -d 20141201 -f 20141231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
+	    print "example (scene): python %s -b LE7 -o scene -d 20141201 -f 20141231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
     else:
@@ -341,8 +343,8 @@ def main():
         else:
             connect_earthexplorer_no_proxy(usgs)	
 
-        rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
-        #rep_scene="%s"%(rep)	#Modified vbnunes
+        # rep_scene="%s/SCENES/%s_%s/GZ"%(rep,path,row)   #Original
+        rep_scene="%s"%(rep)	#Modified vbnunes
         print rep_scene
         if not(os.path.exists(rep_scene)):
             os.makedirs(rep_scene)
