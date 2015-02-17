@@ -42,10 +42,8 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
      f.close()
 
      if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :        
-	 print "Authentification failed"
-	 sys.exit(-1)
-
-
+        print "Authentification failed"
+        sys.exit(-1)
 
      return
  
@@ -61,8 +59,8 @@ def connect_earthexplorer_no_proxy(usgs):
     data = f.read()
     f.close()
     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :
-	print "Authentification failed"
-	sys.exit(-1)
+        print "Authentification failed"
+        sys.exit(-1)
     return
 
 #############################
@@ -410,30 +408,31 @@ def main():
         with file(options.fic_liste) as f:
 	    lignes=f.readlines()
         for ligne in lignes:
-	    (site,nom_prod)=ligne.split(' ')
-	    produit=nom_prod.strip()
-        if produit.startswith('LC8'):
-            repert='4923'
-            stations=['LGN']
-        if produit.startswith('LE7'):
-            repert='3372'
-            stations=['EDC','SGS','AGS','ASN','SG1']
-        if produit.startswith('LT5'):
-            repert='3119'
-            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
- 
-	    if not os.path.exists(rep+'/SITES/'+site):
-	        os.mkdir(rep+'/SITES/'+site)
-	    url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
-	    try:
-	        if options.proxy!=None :
-	           connect_earthexplorer_proxy(proxy,usgs)
-	        else:
-	           connect_earthexplorer_no_proxy(usgs)
+            (site,nom_prod)=ligne.split(' ')
+            produit=nom_prod.strip()
+            print produit
+            if produit.startswith('LC8'):
+                repert='4923'
+                stations=['LGN']
+            if produit.startswith('LE7'):
+                repert='3372'
+                stations=['EDC','SGS','AGS','ASN','SG1']
+            if produit.startswith('LT5'):
+                repert='3119'
+                stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
+            if not os.path.exists(rep+'/'+site):
+                os.mkdir(rep+'/'+site)
+            url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
+            print 'url=',url
+            try:
+                if options.proxy!=None :
+                    connect_earthexplorer_proxy(proxy,usgs)
+                else:
+                    connect_earthexplorer_no_proxy(usgs)
 
-	        downloadChunks(url,rep+'/SITES/'+site,produit+'.tgz')
-	    except TypeError:
-	        print 'produit %s non trouve'%nom_prod
+                downloadChunks(url,rep+'/'+site,produit+'.tgz')
+            except TypeError:
+                print 'produit %s non trouve'%produit
 
 if __name__ == "__main__":
     main()
