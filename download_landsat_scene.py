@@ -221,16 +221,13 @@ def find_in_collection_metadata(collection_file,bird,cc_limit,date_start,date_en
             year_acq =int(row['acquisitionDate'][0:4])
             month_acq=int(row['acquisitionDate'][5:7])
             day_acq  =int(row['acquisitionDate'][8:10])
-            # print year_acq,month_acq, day_acq	
             acqdate=datetime.datetime(year_acq,month_acq, day_acq)
-            # print str(acqdate), row['path']+'='+wr2path, row['row']+'='+wr2row, row['cloudCoverFull']
             if 	int(row['path'])==int(wr2path) and int(row['row'])==int(wr2row) and float(row['cloudCoverFull'])<=cc_limit and date_start<acqdate<date_end:
                 cloudcoverlist.append(row['cloudCoverFull'] + '--' + row['sceneID'])
                 cc_values.append(float(row['cloudCoverFull']))				
             else:
                 sceneID=''
     for i in cloudcoverlist:
-        print i
         if float(i.split('--')[0])==min(cc_values):
             sceneID = i.split('--')[1]
     return sceneID
