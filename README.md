@@ -10,9 +10,9 @@ This routine may be used in three ways :
 - iterative search, by providing the WRS-2 coordinates of the LANDSAT scene, for instance, (198,030) for Toulouse (-s option), , the start date (-d option), and the end date (-f option). If the end date is not provided, it is replaced by today's date by default. Example:
 
 `       download_landsat_scene.py -o scene -b LC8 -d 20130127  -s 181025 -u usgs.txt -p proxy.txt --output /mnt/data/LANDSAT8/N0/`
-- catallogue search, by providing the WRS-2 coordinates of the LANDSAT scene, for instance, (198,030) for Toulouse (-s option), , the start date (-d option), and the end date (-f option). If the end date is not provided, it is replaced by today's date by default. Example:
+- catalog search, by providing the WRS-2 coordinates of the LANDSAT scene, for instance, (198,030) for Toulouse (-s option), , the start date (-d option), and the end date (-f option). If the end date is not provided, it is replaced by today's date by default. Example:
 
-`       download_landsat_scene.py -o catallogue -b LC8 -d 20130127  -s 181025 -u usgs.txt -p proxy.txt --output /mnt/data/LANDSAT8/N0/`
+`       download_landsat_scene.py -o catalog -b LC8 -d 20130127  -s 181025 -u usgs.txt -p proxy.txt --output /mnt/data/LANDSAT8/N0/`
 
 - by providing a list of products to download, as in the example below:
 

@@ -165,7 +165,7 @@ def next_overpass(date1,path,sat):
 
 #############################"Get metadata files
 def getmetadatafiles(destdir,option):
-    print 'Verifying catallogue metadata files...'
+    print 'Verifying catalog metadata files...'
     home = 'http://landsat.usgs.gov/metadata_service/bulk_metadata_files/'
     links=['LANDSAT_8.csv','LANDSAT_ETM.csv','LANDSAT_ETM_SLC_OFF.csv','LANDSAT_TM-1980-1989.csv','LANDSAT_TM-1990-1999.csv','LANDSAT_TM-2000-2009.csv','LANDSAT_TM-2010-2012.csv']
     for l in links:
@@ -227,7 +227,7 @@ def check_cloud_limit(imagepath,limit):
 #############################"Find image with desired specs in usgs entire collection metadata
 
 def find_in_collection_metadata(collection_file,cc_limit,date_start,date_end,wr2path,wr2row):
-    print "Searching for images in catallogue..."
+    print "Searching for images in catalog..."
     cloudcoverlist = []
     cc_values = []	
     with open(collection_file) as csvfile:
@@ -276,7 +276,7 @@ def main():
         usage = "usage: %prog [options] "
         parser = OptionParser(usage=usage)
         parser.add_option("-o", "--option", dest="option", action="store", type="choice", \
-			    help="scene or liste", choices=['scene','liste','catallogue'],default=None)
+			    help="scene or liste", choices=['scene','liste','catalog'],default=None)
         parser.add_option("-l", "--liste", dest="fic_liste", action="store", type="string", \
 			    help="list filename",default=None)
         parser.add_option("-s", "--scene", dest="scene", action="store", type="string", \
@@ -301,8 +301,8 @@ def main():
 			    help="Dir number where files  are stored at USGS",default=None)
         parser.add_option("--station", dest="station", action="store", type="string", \
 			    help="Station acronym (3 letters) of the receiving station where the file is downloaded",default=None)	
-        parser.add_option("-k", "--updatecatalloguefiles", dest="updatecatalloguefiles", action="store", type="choice", \
-			    help="Update catallogue metadata files", choices=['update','noupdate'],default='noupdate')			
+        parser.add_option("-k", "--updatecatalogfiles", dest="updatecatalogfiles", action="store", type="choice", \
+			    help="Update catalog metadata files", choices=['update','noupdate'],default='noupdate')			
 
 
 
@@ -447,8 +447,8 @@ def main():
 									downloaded_ids.append(nom_prod)								
         log(rep,downloaded_ids)
 
-##########Telechargement des produits par catallogue metadata search
-    if options.option=='catallogue':
+##########Telechargement des produits par catalog metadata search
+    if options.option=='catalog':
         produit=options.bird
         path=options.scene[0:3]
         row=options.scene[3:6]
@@ -477,7 +477,7 @@ def main():
         if not(os.path.exists(rep_scene)):
             os.makedirs(rep_scene)
 
-        getmetadatafiles(os.path.dirname(os.path.realpath(__file__)), options.updatecatalloguefiles)			
+        getmetadatafiles(os.path.dirname(os.path.realpath(__file__)), options.updatecatalogfiles)			
 			
         if produit.startswith('LC8'):
             repert=['4923']
@@ -498,7 +498,7 @@ def main():
         			
         nom_prod=find_in_collection_metadata(collection_file,options.clouds,date_start,date_end,path,row)
         if nom_prod=='':
-            print 'No image was found in the catallogue with the given specifications! Exiting...'					
+            print 'No image was found in the catalog with the given specifications! Exiting...'					
         tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
         lsdestdir=os.path.join(rep_scene,nom_prod)
 
