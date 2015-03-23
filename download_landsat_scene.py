@@ -483,7 +483,7 @@ def main():
             repert=['4923']
             collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_8.csv')
         if produit.startswith('LE7'):
-            repert=['3372']
+            repert=['3372','3373']
             collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_ETM.csv')			
         if produit.startswith('LT5'):
             repert=['3119','4345']
