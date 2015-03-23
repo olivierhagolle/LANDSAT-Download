@@ -163,6 +163,21 @@ def next_overpass(date1,path,sat):
         date_overpass=date1
     return(date_overpass)
 
+#############################"Get metadata files
+def getmetadatafiles(destdir,option):
+    print 'Verifying catallogue metadata files...'
+    home = 'http://landsat.usgs.gov/metadata_service/bulk_metadata_files/'
+    links=['LANDSAT_8.csv','LANDSAT_ETM.csv','LANDSAT_ETM_SLC_OFF.csv','LANDSAT_TM-1980-1989.csv','LANDSAT_TM-1990-1999.csv','LANDSAT_TM-2000-2009.csv','LANDSAT_TM-2010-2012.csv']
+    for l in links:
+        destfile = os.path.join(destdir,l)
+        url = home+l
+        if option=='noupdate':
+            if not os.path.exists(destfile):
+                print 'Downloading %s for the first time...'%(l)
+                urllib.urlretrieve (url, destfile)
+        elif option=='update':	
+            urllib.urlretrieve (url, destfile)
+	
 #############################"Unzip tgz file
 	
 def unzipimage(tgzfile,outputdir):
@@ -211,7 +226,7 @@ def check_cloud_limit(imagepath,limit):
 
 #############################"Find image with desired specs in usgs entire collection metadata
 
-def find_in_collection_metadata(collection_file,bird,cc_limit,date_start,date_end,wr2path,wr2row):
+def find_in_collection_metadata(collection_file,cc_limit,date_start,date_end,wr2path,wr2row):
     print "Searching for images in catallogue..."
     cloudcoverlist = []
     cc_values = []	
@@ -222,7 +237,7 @@ def find_in_collection_metadata(collection_file,bird,cc_limit,date_start,date_en
             month_acq=int(row['acquisitionDate'][5:7])
             day_acq  =int(row['acquisitionDate'][8:10])
             acqdate=datetime.datetime(year_acq,month_acq, day_acq)
-            if 	int(row['path'])==int(wr2path) and int(row['row'])==int(wr2row) and float(row['cloudCoverFull'])<=cc_limit and date_start<acqdate<date_end:
+            if 	int(row['path'])==int(wr2path) and int(row['row'])==int(wr2row) and row['DATA_TYPE_L1']!='PR' and float(row['cloudCoverFull'])<=cc_limit and date_start<acqdate<date_end:
                 cloudcoverlist.append(row['cloudCoverFull'] + '--' + row['sceneID'])
                 cc_values.append(float(row['cloudCoverFull']))				
             else:
@@ -277,7 +292,7 @@ def main():
         parser.add_option("-p","--proxy_passwd", dest="proxy", action="store", type="string", \
                 help="Proxy account and password file")
         parser.add_option("-z","--unzip", dest="unzip", action="store", type="string", \
-			    help="Unzip downloaded tgz file", default=None)		
+			    help="Unzip downloaded tgz file", default=None)			
         parser.add_option("-b","--sat", dest="bird", action="store", type="choice", \
 			    help="Which satellite are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
         parser.add_option("--output", dest="output", action="store", type="string", \
@@ -285,7 +300,9 @@ def main():
         parser.add_option("--dir", dest="dir", action="store", type="string", \
 			    help="Dir number where files  are stored at USGS",default=None)
         parser.add_option("--station", dest="station", action="store", type="string", \
-			    help="Station acronym (3 letters) of the receiving station where the file is downloaded",default=None)			
+			    help="Station acronym (3 letters) of the receiving station where the file is downloaded",default=None)	
+        parser.add_option("-k", "--updatecatalloguefiles", dest="updatecatalloguefiles", action="store", type="choice", \
+			    help="Update catallogue metadata files", choices=['update','noupdate'],default='noupdate')			
 
 
 
@@ -440,7 +457,6 @@ def main():
         month_start=int(options.start_date[4:6])
         day_start  =int(options.start_date[6:8])
         date_start=datetime.datetime(year_start,month_start, day_start)
-        global downloaded_ids		
         downloaded_ids=[]
 
         if options.end_date!= None:
@@ -461,15 +477,16 @@ def main():
         if not(os.path.exists(rep_scene)):
             os.makedirs(rep_scene)
 
+        getmetadatafiles(os.path.dirname(os.path.realpath(__file__)), options.updatecatalloguefiles)			
 			
         if produit.startswith('LC8'):
-            repert='4923'
+            repert=['4923']
             collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_8.csv')
         if produit.startswith('LE7'):
-            repert='3372'
+            repert=['3372']
             collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_ETM.csv')			
         if produit.startswith('LT5'):
-            repert='3119'
+            repert=['3119','4345']
             if 2000<=int(year_start)<=2009:
                 collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_TM-2000-2009.csv')
             if 2010<=int(year_start)<=2012:
@@ -479,14 +496,12 @@ def main():
 
         notfound = False		
         			
-        nom_prod=find_in_collection_metadata(collection_file,'',options.clouds,date_start,date_end,path,row)
+        nom_prod=find_in_collection_metadata(collection_file,options.clouds,date_start,date_end,path,row)
         if nom_prod=='':
             print 'No image was found in the catallogue with the given specifications! Exiting...'					
         tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
         lsdestdir=os.path.join(rep_scene,nom_prod)
 
-        url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
-        print url
         if os.path.exists(lsdestdir):
             print '   product %s already downloaded and unzipped'%nom_prod
             downloaded_ids.append(nom_prod)
@@ -499,17 +514,20 @@ def main():
                     downloaded_ids.append(nom_prod)	
                     check = 0						
         else:
-            try:
-                downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
-            except:
-                print '   product %s not found'%nom_prod
-                notfound = True
-            if notfound != True and options.unzip!= None:
-                p=unzipimage(nom_prod,rep_scene)
-                if p==1 and options.clouds!= None:					
-                    check=check_cloud_limit(lsdestdir,options.clouds)
-                    if check==0:
-                        downloaded_ids.append(nom_prod)			
+            while check == 1:
+                for collectionid in repert:
+                    url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(collectionid,nom_prod)				
+                    try:
+                        downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
+                    except:
+                        print '   product %s not found'%nom_prod
+                        notfound = True
+                    if notfound != True and options.unzip!= None:
+                        p=unzipimage(nom_prod,rep_scene)
+                        if p==1 and options.clouds!= None:					
+                            check=check_cloud_limit(lsdestdir,options.clouds)
+                            if check==0:
+                                downloaded_ids.append(nom_prod)			
         log(rep,downloaded_ids)		
 		
 ##########Telechargement par liste
