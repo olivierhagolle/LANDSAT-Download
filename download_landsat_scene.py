@@ -498,9 +498,10 @@ def main():
         			
         nom_prod=find_in_collection_metadata(collection_file,options.clouds,date_start,date_end,path,row)
         if nom_prod=='':
-            print 'No image was found in the catalog with the given specifications! Exiting...'					
-        tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
-        lsdestdir=os.path.join(rep_scene,nom_prod)
+            sys.exit('No image was found in the catalog with the given specifications! Exiting...')
+        else:				
+            tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
+            lsdestdir=os.path.join(rep_scene,nom_prod)
 
         if os.path.exists(lsdestdir):
             print '   product %s already downloaded and unzipped'%nom_prod
