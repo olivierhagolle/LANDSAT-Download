@@ -267,6 +267,7 @@ def main():
 	    print "        ou : ", prog, " -h"
 	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
 	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
 	    print "example (scene): python %s -b LE7 -o scene -d 20141201 -f 20141231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
@@ -294,7 +295,9 @@ def main():
         parser.add_option("-b","--sat", dest="bird", action="store", type="choice", \
 			    help="Which satellite are you looking for", choices=['LT5','LE7', 'LC8'], default='LC8')	
         parser.add_option("--output", dest="output", action="store", type="string", \
-			    help="Where to download files",default='/tmp/LANDSAT')			
+			    help="Where to download files",default='/tmp/LANDSAT')
+        parser.add_option("--outputcatalogs", dest="outputcatalogs", action="store", type="string", \
+			    help="Where to download metadata catalog files",default='/tmp/LANDSAT')					
         parser.add_option("--dir", dest="dir", action="store", type="string", \
 			    help="Dir number where files  are stored at USGS",default=None)
         parser.add_option("--station", dest="station", action="store", type="string", \
@@ -475,20 +478,20 @@ def main():
         if not(os.path.exists(rep_scene)):
             os.makedirs(rep_scene)
 
-        getmetadatafiles(os.path.dirname(os.path.realpath(__file__)), options.updatecatalogfiles)			
+        getmetadatafiles(options.outputcatalogs, options.updatecatalogfiles)			
 			
         if produit.startswith('LC8'):
             repert=['4923']
-            collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_8.csv')
+            collection_file=os.path.join(options.outputcatalogs,'LANDSAT_8.csv')
         if produit.startswith('LE7'):
             repert=['3372','3373']
-            collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_ETM.csv')			
+            collection_file=os.path.join(options.outputcatalogs,'LANDSAT_ETM.csv')			
         if produit.startswith('LT5'):
             repert=['3119','4345']
             if 2000<=int(year_start)<=2009:
-                collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_TM-2000-2009.csv')
+                collection_file=os.path.join(options.outputcatalogs,'LANDSAT_TM-2000-2009.csv')
             if 2010<=int(year_start)<=2012:
-                collection_file=os.path.join(os.path.dirname(os.path.realpath(__file__)),'LANDSAT_TM-2010-2012.csv')				
+                collection_file=os.path.join(options.outputcatalogs,'LANDSAT_TM-2010-2012.csv')				
             
         check=1
 
