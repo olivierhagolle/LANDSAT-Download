@@ -37,6 +37,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
      params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd']))
  
      # utilisation
+     #f = opener.open('https://ers.cr.usgs.gov/login', params)
      f = opener.open('https://ers.cr.usgs.gov/login', params)
      data = f.read()
      f.close()
@@ -548,7 +549,7 @@ def main():
                 stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
-            url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
+            url="http:///ers.cr.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
             print 'url=',url
             try:
                 if options.proxy!=None :
