@@ -24,38 +24,48 @@ class OptionParser (optparse.OptionParser):
 #############################"Connection to Earth explorer with proxy
  
 def connect_earthexplorer_proxy(proxy_info,usgs):
-     print "Establishing connection to Earthexplorer with proxy..."    
-     # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
-     proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
-     "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
-     opener = urllib2.build_opener(proxy_support, urllib2.HTTPCookieProcessor)
+    print "Establishing connection to Earthexplorer with proxy..."    
+    # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
+    cookies = urllib2.HTTPCookieProcessor()
+    proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
+    "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
+    opener = urllib2.build_opener(proxy_support, cookies)
  
-     # installation
-     urllib2.install_opener(opener)
-
-     # parametres de connection
-     params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd']))
+    # installation
+    urllib2.install_opener(opener)
+    # deal with csrftoken required by USGS as of 8-8-2016
+    try:
+        token = [x.value for x in cookies.cookiejar if x.name == 'csrftoken'][0]
+    except IndexError:
+        return False, "no csrftoken"
+    # parametres de connection
+    params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrfmiddlewaretoken=token))
  
-     # utilisation
-     #f = opener.open('https://ers.cr.usgs.gov/login', params)
-     f = opener.open('https://ers.cr.usgs.gov/login', params)
-     data = f.read()
-     f.close()
+    # utilisation
+    #f = opener.open('https://ers.cr.usgs.gov/login', params)
+    f = opener.open('https://ers.cr.usgs.gov/login', params)
+    data = f.read()
+    f.close()
 
-     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :        
+    if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :        
         print "Authentification failed"
         sys.exit(-1)
 
-     return
+    return
  
  
 #############################"Connection to Earth explorer without proxy
  
 def connect_earthexplorer_no_proxy(usgs):
-    print "Establishing connection to Earthexplorer..."
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+    cookies = urllib2.HTTPCookieProcessor()
+    opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
-    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd']))
+    # deal with csrftoken required by USGS as of 8-8-2016
+    try:
+        token = [x.value for x in cookies.cookiejar if x.name == 'csrftoken'][0]
+    except IndexError:
+        return False, "no csrftoken"
+    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrfmiddlewaretoken=token))
     f = opener.open("https://ers.cr.usgs.gov/login", params)
     data = f.read()
     f.close()
