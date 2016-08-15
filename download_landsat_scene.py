@@ -10,6 +10,8 @@ import subprocess
 import optparse
 import datetime
 import csv
+import itertools
+from BeautifulSoup import BeautifulSoup
 
 ###########################################################################
 class OptionParser (optparse.OptionParser):
@@ -33,24 +35,22 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
  
     # installation
     urllib2.install_opener(opener)
-    # deal with csrftoken required by USGS as of 8-8-2016
-    try:
-        token = [x.value for x in cookies.cookiejar if x.name == 'csrftoken'][0]
-    except IndexError:
-        return False, "no csrftoken"
+    # deal with csrftoken required by USGS as of 7-20-2016
+    soup = BeautifulSoup(urllib2.urlopen("https://ers.cr.usgs.gov/login").read())
+    token = soup.find('input', {'name': 'csrf_token'})
+    headers = urllib2.urlopen("https://ers.cr.usgs.gov/login")
+    headers = dict(itertools.izip_longest(*[iter(headers)] * 2, fillvalue=""))
     # parametres de connection
-    params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrfmiddlewaretoken=token))
- 
+    params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
     # utilisation
     #f = opener.open('https://ers.cr.usgs.gov/login', params)
-    f = opener.open('https://ers.cr.usgs.gov/login', params)
+    f = opener.open('https://ers.cr.usgs.gov/login', params, headers=headers)
     data = f.read()
     f.close()
 
     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :        
         print "Authentification failed"
         sys.exit(-1)
-
     return
  
  
@@ -60,13 +60,15 @@ def connect_earthexplorer_no_proxy(usgs):
     cookies = urllib2.HTTPCookieProcessor()
     opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
-    # deal with csrftoken required by USGS as of 8-8-2016
-    try:
-        token = [x.value for x in cookies.cookiejar if x.name == 'csrftoken'][0]
-    except IndexError:
-        return False, "no csrftoken"
-    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrfmiddlewaretoken=token))
-    f = opener.open("https://ers.cr.usgs.gov/login", params)
+    
+    headers = urllib2.urlopen("https://ers.cr.usgs.gov/login")
+    data = headers.read()
+    soup = BeautifulSoup(urllib2.urlopen("https://ers.cr.usgs.gov/login").read())
+    token = soup.find('input', {'name': 'csrf_token'})
+    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrf_token=token['value']))
+    headers = dict(itertools.izip_longest(*[iter(headers)] * 2, fillvalue=""))
+    request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers=headers)
+    f = urllib2.urlopen(request)
     data = f.read()
     f.close()
     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :
