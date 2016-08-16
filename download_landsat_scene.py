@@ -54,6 +54,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
 #############################"Connection to Earth explorer without proxy
  
 def connect_earthexplorer_no_proxy(usgs):
+    # mkmitchel (https://github.com/mkmitchell) solved the token issue
     cookies = urllib2.HTTPCookieProcessor()
     opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
@@ -275,10 +276,10 @@ def main():
 	    print '      '+sys.argv[0]+' [options]'
 	    print "     Aide : ", prog, " --help"
 	    print "        ou : ", prog, " -h"
-	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
-	    print "example (scene): python %s -b LE7 -o scene -d 20141201 -f 20141231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
+	    print "example (scene): python %s -o scene -a 2013 -d 20151001 -f 20151231 -s 199030 -u usgs.txt"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
+	    print "example (scene): python %s -b LE7 -o scene -d 20151201 -f 20151231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
     else:
