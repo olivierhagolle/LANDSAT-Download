@@ -10,6 +10,7 @@ import subprocess
 import optparse
 import datetime
 import csv
+from BeautifulSoup import BeautifulSoup
 
 ###########################################################################
 class OptionParser (optparse.OptionParser):
@@ -24,39 +25,44 @@ class OptionParser (optparse.OptionParser):
 #############################"Connection to Earth explorer with proxy
  
 def connect_earthexplorer_proxy(proxy_info,usgs):
-     print "Establishing connection to Earthexplorer with proxy..."    
-     # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
-     proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
-     "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
-     opener = urllib2.build_opener(proxy_support, urllib2.HTTPCookieProcessor)
+    print "Establishing connection to Earthexplorer with proxy..."    
+    # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
+    cookies = urllib2.HTTPCookieProcessor()
+    proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
+    "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
+    opener = urllib2.build_opener(proxy_support, cookies)
  
-     # installation
-     urllib2.install_opener(opener)
+    # installation
+    urllib2.install_opener(opener)
+    # deal with csrftoken required by USGS as of 7-20-2016
+    soup = BeautifulSoup(urllib2.urlopen("https://ers.cr.usgs.gov/login").read())
+    token = soup.find('input', {'name': 'csrf_token'})
+    # parametres de connection
+    params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
+    # utilisation
+    #f = opener.open('https://ers.cr.usgs.gov/login', params)
+    f = opener.open('https://ers.cr.usgs.gov/login', params, headers={})
+    data = f.read()
+    f.close()
 
-     # parametres de connection
-     params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd']))
- 
-     # utilisation
-     #f = opener.open('https://ers.cr.usgs.gov/login', params)
-     f = opener.open('https://ers.cr.usgs.gov/login', params)
-     data = f.read()
-     f.close()
-
-     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :        
+    if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :        
         print "Authentification failed"
         sys.exit(-1)
-
-     return
+    return
  
  
 #############################"Connection to Earth explorer without proxy
  
 def connect_earthexplorer_no_proxy(usgs):
-    print "Establishing connection to Earthexplorer..."
-    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
+    cookies = urllib2.HTTPCookieProcessor()
+    opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
-    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd']))
-    f = opener.open("https://ers.cr.usgs.gov/login", params)
+    
+    soup = BeautifulSoup(urllib2.urlopen("https://ers.cr.usgs.gov/login").read())
+    token = soup.find('input', {'name': 'csrf_token'})
+    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrf_token=token['value']))
+    request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={})
+    f = urllib2.urlopen(request)
     data = f.read()
     f.close()
     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :
@@ -75,19 +81,21 @@ def sizeof_fmt(num):
 def downloadChunks(url,rep,nom_fic):
   """ Downloads large files in pieces
    inspired by http://josh.gourneau.com
-  """
- 
+  """ 
   try:
     req = urllib2.urlopen(url)
-    #taille du fichier
+    #if downloaded file is html
     if (req.info().gettype()=='text/html'):
-      print "erreur : le fichier est au format html"
+      print "error : file is in html and not an expected binary file"
       lignes=req.read()
       if lignes.find('Download Not Found')>0 :
             raise TypeError
       else:
-	  print lignes
-	  print sys.exit(-1)
+	  with open("error_output.html","w") as f:
+              f.write(lines)
+              print "result saved in ./error_output.html"
+              sys.exit(-1)
+    #if file too small           
     total_size = int(req.info().getheader('Content-Length').strip())
     if (total_size<50000):
        print "Error: The file is too small to be a Landsat Image"
@@ -96,6 +104,7 @@ def downloadChunks(url,rep,nom_fic):
     print nom_fic,total_size
     total_size_fmt = sizeof_fmt(total_size)
 
+    #download
     downloaded = 0
     CHUNK = 1024 * 1024 *8
     with open(rep+'/'+nom_fic, 'wb') as fp:
@@ -554,7 +563,7 @@ def main():
                 stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
-            url="http:///ers.cr.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
+            url="http:///earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
             print 'url=',url
             try:
                 if options.proxy!=None :
