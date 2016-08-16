@@ -81,19 +81,21 @@ def sizeof_fmt(num):
 def downloadChunks(url,rep,nom_fic):
   """ Downloads large files in pieces
    inspired by http://josh.gourneau.com
-  """
- 
+  """ 
   try:
     req = urllib2.urlopen(url)
-    #taille du fichier
+    #if downloaded file is html
     if (req.info().gettype()=='text/html'):
-      print "erreur : le fichier est au format html"
+      print "error : file is in html and not an expected binary file"
       lignes=req.read()
       if lignes.find('Download Not Found')>0 :
             raise TypeError
       else:
-	  print lignes
-	  print sys.exit(-1)
+	  with open("error_output.html","w") as f:
+              f.write(lines)
+              print "result saved in ./error_output.html"
+              sys.exit(-1)
+    #if file too small           
     total_size = int(req.info().getheader('Content-Length').strip())
     if (total_size<50000):
        print "Error: The file is too small to be a Landsat Image"
@@ -102,6 +104,7 @@ def downloadChunks(url,rep,nom_fic):
     print nom_fic,total_size
     total_size_fmt = sizeof_fmt(total_size)
 
+    #download
     downloaded = 0
     CHUNK = 1024 * 1024 *8
     with open(rep+'/'+nom_fic, 'wb') as fp:
