@@ -1,8 +1,8 @@
 LANDSAT-Download
 ================
 
-**you might also be interested by the S2-download tool to download Sentinel-2 data
-https://github.com/olivierhagolle/Sentinel-download/blob/master/README.md**
+*you might also be interested by the S2-download tool to download Sentinel-2 data
+https://github.com/olivierhagolle/Sentinel-download/blob/master/README.md*
 
 The routine provided below enables to automatically download LANDSAT data, using the current (April 2014) version of EarthExplorer system. This new version (2014-08-19) does not need to provide the exact overpass date anymore, I have reused here an idea of my colleague Michel Le Page at CESBIO (Thanks Michel !), though implemented differently.
 
