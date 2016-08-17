@@ -44,9 +44,6 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
     # parametres de connection
     params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
     # utilisation
-    #f = opener.open('https://ers.cr.usgs.gov/login', params)
-
-
     request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={})
     f = urllib2.urlopen(request)
     data = f.read()
