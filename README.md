@@ -8,9 +8,7 @@ The routine provided below enables to automatically download LANDSAT data, using
 
 It works for LANDSAT 8 and LANDSAT 5&7, but needs that the data be already online. It was true for LANDSAT 8 until September 2014, but after that date, to avoid increasing the on-line data volume indefinitly, USGS started to clean out older data to replace them by the new ones. It is also the case for the older LANDSAT satellites. Depending on the products you need, it may be necessary to first order for the production of L1T products, on the earthexplorer site http://earthexplorer.usgs.gov. And of course, you will need to have an account and password on the Earthexplorer website, and you will have to store it on the usgs.txt file. If you have an access through a proxy, you might try the -p option. it works through CNES proxy at least but was only tested there.
 
-In 2016, USGS introduced a CRSF token for the authentification. [Mike Mitchell](https://github.com/mkmitchell) found a solution, which requires installing the BeautifulSoup library. This may be done likewise :
-- `pip install beautifulsoup`
-- `sudo apt-get install python-beautifulsoup`
+In 2016, USGS introduced a CRSF token for the authentification. [@mkmitchell](https://github.com/mkmitchell) found a solution, which was later enhanced by [@dswanepoel](https://github.com/dswanepoel).
 
 ####Examples :
 This routine may be used in three ways :
