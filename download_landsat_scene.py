@@ -3,14 +3,13 @@
 
 """
     Landsat Data download from earth explorer
-    Incorporates jake-Brinkmann improvements
 """
 import os,sys,math,urllib2,urllib,time,math,shutil
 import subprocess
 import optparse
 import datetime
 import csv
-from BeautifulSoup import BeautifulSoup
+import re
 
 ###########################################################################
 class OptionParser (optparse.OptionParser):
@@ -35,13 +34,21 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
     # installation
     urllib2.install_opener(opener)
     # deal with csrftoken required by USGS as of 7-20-2016
-    soup = BeautifulSoup(urllib2.urlopen("https://ers.cr.usgs.gov/login").read())
-    token = soup.find('input', {'name': 'csrf_token'})
+    data=urllib2.urlopen("https://ers.cr.usgs.gov/login").read()
+    m = re.search(r'<input .*?name="csrf_token".*?value="(.*?)"', data)
+    if m:
+        token = m.group(1)
+    else :
+        print "Error : CSRF_Token not found"
+        sys.exit(-3)
     # parametres de connection
     params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
     # utilisation
     #f = opener.open('https://ers.cr.usgs.gov/login', params)
-    f = opener.open('https://ers.cr.usgs.gov/login', params, headers={})
+
+
+    request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={})
+    f = urllib2.urlopen(request)
     data = f.read()
     f.close()
 
@@ -59,11 +66,18 @@ def connect_earthexplorer_no_proxy(usgs):
     opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
     
-    soup = BeautifulSoup(urllib2.urlopen("https://ers.cr.usgs.gov/login").read())
-    token = soup.find('input', {'name': 'csrf_token'})
-    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrf_token=token['value']))
+    data=urllib2.urlopen("https://ers.cr.usgs.gov/login").read()
+    m = re.search(r'<input .*?name="csrf_token".*?value="(.*?)"', data)
+    if m:
+        token = m.group(1)
+    else :
+        print "Error : CSRF_Token not found"
+        sys.exit(-3)
+        
+    params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrf_token=token))
     request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={})
     f = urllib2.urlopen(request)
+
     data = f.read()
     f.close()
     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :
