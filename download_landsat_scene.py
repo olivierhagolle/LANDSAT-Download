@@ -419,10 +419,10 @@ def main():
         if produit.startswith('LE7'):
             repert='3373'
             #repert='3372"
-            stations=['EDC','SGS','AGS','ASN','SG1','CUB']
+            stations=['EDC','SGS','AGS','ASN','SG1','CUB','COA']
         if produit.startswith('LT5'):
             repert='3119'
-            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
+            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB']		
         
         if options.station !=None:
             stations=[options.station]
@@ -569,10 +569,10 @@ def main():
             if produit.startswith('LE7'):
                 repert='3372'
                 #repert='3372"
-                stations=['EDC','SGS','AGS','ASN','SG1','CUB']
+                stations=['EDC','SGS','AGS','ASN','SG1','CUB', 'COA']
             if produit.startswith('LT5'):
                 repert='3119'
-                stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
+                stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
             url="http:///earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
