@@ -575,7 +575,7 @@ def main():
                 stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
-            url="http:///earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
+            url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
             print 'url=',url
             try:
                 if options.proxy!=None :
