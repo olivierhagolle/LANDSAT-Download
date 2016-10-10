@@ -563,7 +563,7 @@ def main():
                 repert='4923'
                 stations=['LGN']
             if produit.startswith('LE7'):
-                repert='3372'
+                repert='3373'
                 #repert='3372"
                 stations=['EDC','SGS','AGS','ASN','SG1','CUB', 'COA']
             if produit.startswith('LT5'):
