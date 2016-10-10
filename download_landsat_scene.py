@@ -3,13 +3,13 @@
 
 """
     Landsat Data download from earth explorer
-    Incorporates jake-Brinkmann improvements
 """
 import os,sys,math,urllib2,urllib,time,math,shutil
 import subprocess
 import optparse
 import datetime
 import csv
+import re
 
 ###########################################################################
 class OptionParser (optparse.OptionParser):
@@ -33,6 +33,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
  
     # installation
     urllib2.install_opener(opener)
+
     # deal with csrftoken required by USGS as of 8-8-2016
     try:
         token = [x.value for x in cookies.cookiejar if x.name == 'csrftoken'][0]
@@ -57,6 +58,7 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
 #############################"Connection to Earth explorer without proxy
  
 def connect_earthexplorer_no_proxy(usgs):
+
     cookies = urllib2.HTTPCookieProcessor()
     opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
@@ -67,6 +69,7 @@ def connect_earthexplorer_no_proxy(usgs):
         return False, "no csrftoken"
     params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrfmiddlewaretoken=token))
     f = opener.open("https://ers.cr.usgs.gov/login", params)
+
     data = f.read()
     f.close()
     if data.find('You must sign in as a registered user to download data or place orders for USGS EROS products')>0 :
@@ -85,21 +88,22 @@ def sizeof_fmt(num):
 def downloadChunks(url,rep,nom_fic):
   """ Downloads large files in pieces
    inspired by http://josh.gourneau.com
-  """
- 
+  """ 
   try:
     req = urllib2.urlopen(url)
-    #taille du fichier
+    #if downloaded file is html
     if (req.info().gettype()=='text/html'):
-      print "error : file is in html format, and shouldn't"
+
+      print "error : file is in html and not an expected binary file"
       lignes=req.read()
       if lignes.find('Download Not Found')>0 :
             raise TypeError
       else:
-          with open("error_output.html","w") as f:
-              f.write(lignes)
+        with open("error_output.html","w") as f:
+              f.write(lines)
               print "result saved in ./error_output.html"
-              print sys.exit(-1)
+              sys.exit(-1)
+    #if file too small           
     total_size = int(req.info().getheader('Content-Length').strip())
     if (total_size<50000):
        print "Error: The file is too small to be a Landsat Image"
@@ -108,6 +112,7 @@ def downloadChunks(url,rep,nom_fic):
     print nom_fic,total_size
     total_size_fmt = sizeof_fmt(total_size)
 
+    #download
     downloaded = 0
     CHUNK = 1024 * 1024 *8
     with open(rep+'/'+nom_fic, 'wb') as fp:
@@ -278,10 +283,10 @@ def main():
 	    print '      '+sys.argv[0]+' [options]'
 	    print "     Aide : ", prog, " --help"
 	    print "        ou : ", prog, " -h"
-	    print "example (scene): python %s -o scene -a 2013 -d 360 -f 365 -s 199030 -u usgs.txt"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
-	    print "example (scene): python %s -b LE7 -o scene -d 20141201 -f 20141231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
+	    print "example (scene): python %s -o scene -a 2013 -d 20151001 -f 20151231 -s 199030 -u usgs.txt"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
+	    print "example (scene): python %s -b LE7 -o scene -d 20151201 -f 20151231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
     else:
@@ -410,10 +415,10 @@ def main():
         if produit.startswith('LE7'):
             repert='3373'
             #repert='3372"
-            stations=['EDC','SGS','AGS','ASN','SG1']
+            stations=['EDC','SGS','AGS','ASN','SG1','CUB','COA']
         if produit.startswith('LT5'):
             repert='3119'
-            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']		
+            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB']		
         
         if options.station !=None:
             stations=[options.station]
@@ -560,13 +565,13 @@ def main():
             if produit.startswith('LE7'):
                 repert='3372'
                 #repert='3372"
-                stations=['EDC','SGS','AGS','ASN','SG1']
+                stations=['EDC','SGS','AGS','ASN','SG1','CUB', 'COA']
             if produit.startswith('LT5'):
                 repert='3119'
-                stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
+                stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
-            url="http:///earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
+            url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
             print 'url=',url
             try:
                 if options.proxy!=None :
