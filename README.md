@@ -32,7 +32,7 @@ with a file list2_landsat8.txt as provide below (the landsat references must exi
 
 The usgs.txt must contain your username and password on the same line separated by a blank.
 
-If you do not use the --ouput option, the files will be downloaded to /tmp/Landsat (provided it exists)
+If you do not use the --output option, the files will be downloaded to /tmp/Landsat (provided it exists)
 
 Set a cloud limit to get only images with cloud cover bellow that limit. In the catallogue search mode, the program will get the best image bellow that limit. For example, if you set a limit of 20% and it finds 3 images it will download the one will less cloud cover.
 
