@@ -6,7 +6,7 @@ https://github.com/olivierhagolle/Sentinel-download/blob/master/README.md*
 
 The routine provided below enables to automatically download LANDSAT data, using the current (April 2014) version of EarthExplorer system. This new version (2014-08-19) does not need to provide the exact overpass date anymore, I have reused here an idea of my colleague Michel Le Page at CESBIO (Thanks Michel !), though implemented differently.
 
-It works for LANDSAT 8 and LANDSAT 5&7, but needs that the data be already online. It was true for LANDSAT 8 until September 2014, but after that date, to avoid increasing the on-line data volume indefinitly, USGS started to clean out older data to replace them by the new ones. It is also the case for the older LANDSAT satellites. Depending on the products you need, it may be necessary to first order for the production of L1T products, on the earthexplorer site http://earthexplorer.usgs.gov. And of course, you will need to have an account and password on the Earthexplorer website, and you will have to store it on the usgs.txt file. If you have an access through a proxy, you might try the -p option. it works through CNES proxy at least but was only tested there.
+It works for LANDSAT 8 and LANDSAT 5&7, but needs that the data be already online. It was true for LANDSAT 8 until September 2014, but after that date, to avoid increasing the on-line data volume indefinitely, USGS started to clean out older data to replace them by the new ones. It is also the case for the older LANDSAT satellites. Depending on the products you need, it may be necessary to first order for the production of L1T products, on the earthexplorer site http://earthexplorer.usgs.gov. And of course, you will need to have an account and password on the Earthexplorer website, and you will have to store it on the usgs.txt file. If you have an access through a proxy, you might try the -p option. it works through CNES proxy at least but was only tested there.
 
 In 2016, USGS introduced a CRSF token for the authentification. [@mkmitchell](https://github.com/mkmitchell) found a solution, which was later enhanced by [@dswanepoel](https://github.com/dswanepoel).
 
@@ -34,7 +34,7 @@ The usgs.txt must contain your username and password on the same line separated 
 
 If you do not use the --output option, the files will be downloaded to /tmp/Landsat (provided it exists)
 
-Set a cloud limit to get only images with cloud cover bellow that limit. In the catallogue search mode, the program will get the best image bellow that limit. For example, if you set a limit of 20% and it finds 3 images it will download the one will less cloud cover.
+Set a cloud limit to get only images with cloud cover below that limit. In the catalogue search mode, the program will get the best image below that limit. For example, if you set a limit of 20% and it finds 3 images it will download the one will less cloud cover.
 
 To see all the options : 
 `       download_landsat_scene.py -h`
