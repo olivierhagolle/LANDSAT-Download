@@ -27,25 +27,30 @@ def connect_earthexplorer_proxy(proxy_info,usgs):
     print "Establishing connection to Earthexplorer with proxy..."    
     # contruction d'un "opener" qui utilise une connexion proxy avec autorisation
     cookies = urllib2.HTTPCookieProcessor()
+    
     proxy_support = urllib2.ProxyHandler({"http" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info,
     "https" : "http://%(user)s:%(pass)s@%(host)s:%(port)s" % proxy_info})
     opener = urllib2.build_opener(proxy_support, cookies)
+    opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
  
     # installation
     urllib2.install_opener(opener)
     # deal with csrftoken required by USGS as of 7-20-2016
-    data=urllib2.urlopen("https://ers.cr.usgs.gov").read()
+    data=urllib2.urlopen("https://ers.cr.usgs.gov/login").read()
     m = re.search(r'<input .*?name="csrf_token".*?value="(.*?)"', data)
     if m:
         token = m.group(1)
+        print token
     else :
         print "Error : CSRF_Token not found"
         sys.exit(-3)
     # parametres de connection
     params = urllib.urlencode(dict(username=usgs['account'], password=usgs['passwd'], csrf_token=token))
     # utilisation
+    #f = opener.open('https://ers.cr.usgs.gov/login', params)
 
-    request = urllib2.Request("https://ers.cr.usgs.gov", params, headers={})
+
+    request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={})
     f = urllib2.urlopen(request)
     data = f.read()
     f.close()
@@ -63,17 +68,20 @@ def connect_earthexplorer_no_proxy(usgs):
     cookies = urllib2.HTTPCookieProcessor()
     opener = urllib2.build_opener(cookies)
     urllib2.install_opener(opener)
+    opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
     
-    data=urllib2.urlopen("https://ers.cr.usgs.gov").read()
+    data=urllib2.urlopen("https://ers.cr.usgs.gov/login").read()
     m = re.search(r'<input .*?name="csrf_token".*?value="(.*?)"', data)
     if m:
         token = m.group(1)
+        print token
     else :
         print "Error : CSRF_Token not found"
         sys.exit(-3)
         
     params = urllib.urlencode(dict(username=usgs['account'],password= usgs['passwd'], csrf_token=token))
-    request = urllib2.Request("https://ers.cr.usgs.gov/login", params, headers={})
+    request = urllib2.Request("https://ers.cr.usgs.gov/login", params)
+    request.add_header('User-Agent', 'Mozilla/5.0')
     f = urllib2.urlopen(request)
 
     data = f.read()
@@ -187,7 +195,7 @@ def next_overpass(date1,path,sat):
 #############################"Get metadata files
 def getmetadatafiles(destdir,option):
     print 'Verifying catalog metadata files...'
-    home = 'https://landsat.usgs.gov/landsat/metadata_service/bulk_metadata_files/'
+    home = 'http://landsat.usgs.gov/metadata_service/bulk_metadata_files/'
     links=['LANDSAT_8.csv','LANDSAT_ETM.csv','LANDSAT_ETM_SLC_OFF.csv','LANDSAT_TM-1980-1989.csv','LANDSAT_TM-1990-1999.csv','LANDSAT_TM-2000-2009.csv','LANDSAT_TM-2010-2012.csv']
     for l in links:
         destfile = os.path.join(destdir,l)
@@ -323,6 +331,8 @@ def main():
 			    help="Where to download metadata catalog files",default='/tmp/LANDSAT')					
         parser.add_option("--dir", dest="dir", action="store", type="string", \
 			    help="Dir number where files  are stored at USGS",default=None)
+        parser.add_option("--collection", dest="collection", action="store", type="int", \
+			    help="Landsat collection",default=1)
         parser.add_option("--station", dest="station", action="store", type="string", \
 			    help="Station acronym (3 letters) of the receiving station where the file is downloaded",default=None)	
         parser.add_option("-k", "--updatecatalogfiles", dest="updatecatalogfiles", action="store", type="choice", \
@@ -415,7 +425,10 @@ def main():
             os.makedirs(rep_scene)
 			
         if produit.startswith('LC8'):
-            repert='4923'
+            if options.collection==0:
+                repert='4923'
+            elif options.collection==1:
+                repert='12864'
             stations=['LGN']
         if produit.startswith('LE7'):
             repert='3373'
@@ -444,7 +457,7 @@ def main():
 					nom_prod=produit+options.scene+date_asc+station+version
 					tgzfile=os.path.join(rep_scene,nom_prod+'.tgz')
 					lsdestdir=os.path.join(rep_scene,nom_prod)				
-					url="https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
+					url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,nom_prod)
 					print url
 					if os.path.exists(lsdestdir):
 						print '   product %s already downloaded and unzipped'%nom_prod
@@ -542,7 +555,7 @@ def main():
         else:
             while check == 1:
                 for collectionid in repert:
-                    url="https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(collectionid,nom_prod)				
+                    url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(collectionid,nom_prod)				
                     try:
                         downloadChunks(url,"%s"%rep_scene,nom_prod+'.tgz')
                     except:
@@ -576,7 +589,7 @@ def main():
                 stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
-            url="https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
+            url="http://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
             print 'url=',url
             try:
                 if options.proxy!=None :
