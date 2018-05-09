@@ -289,8 +289,8 @@ def main():
 	    print "     Aide : ", prog, " --help"
 	    print "        ou : ", prog, " -h"
 	    print "example (scene): python %s -o scene -d 20151001 -f 20151231 -s 199030 -u usgs.txt"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
-	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
+	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20101001 -f 20101231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
 	    print "example (scene): python %s -b LE7 -o scene -d 20151201 -f 20151231 -s 191025 -u usgs.txt --output . --dir=12267 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
