@@ -291,7 +291,7 @@ def main():
 	    print "example (scene): python %s -o scene -d 20151001 -f 20151231 -s 199030 -u usgs.txt"%sys.argv[0]
 	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/"%sys.argv[0]
 	    print "example (scene): python %s -z unzip -b LT5 -o scene -d 20151001 -f 20151231 -s 203034 -u usgs.txt --output /outputdir/ -k update --outputcatalogs /outputcatalogsdir/"%sys.argv[0]		
-	    print "example (scene): python %s -b LE7 -o scene -d 20151201 -f 20151231 -s 191025 -u usgs.txt --output . --dir=3373 --station SG1"%sys.argv[0]
+	    print "example (scene): python %s -b LE7 -o scene -d 20151201 -f 20151231 -s 191025 -u usgs.txt --output . --dir=12267 --station SG1"%sys.argv[0]
 	    print "example (liste): python %s -o liste -l /home/hagolle/LANDSAT/liste_landsat8_site.txt -u usgs.txt"%sys.argv[0]	
 	    sys.exit(-1)
     else:
@@ -417,18 +417,14 @@ def main():
             os.makedirs(rep_scene)
 			
         if produit.startswith('LC8'):
-            if options.collection==0:
-                repert='4923'
-            elif options.collection==1:
-                repert='12864'
+            repert='12864'
             stations=['LGN']
         if produit.startswith('LE7'):
-            repert='3373'
-            #repert='3372"
+            repert='12267'
             stations=['EDC','SGS','AGS','ASN','SG1','CUB','COA']
         if produit.startswith('LT5'):
-            repert='3119'
-            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB']		
+            repert='12266'
+            stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS', 'CUB','JSA']		
         
         if options.station !=None:
             stations=[options.station]
@@ -510,13 +506,13 @@ def main():
         getmetadatafiles(options.outputcatalogs, options.updatecatalogfiles)			
 			
         if produit.startswith('LC8'):
-            repert=['4923']
+            repert=['12864']
             collection_file=os.path.join(options.outputcatalogs,'LANDSAT_8.csv')
         if produit.startswith('LE7'):
-            repert=['3372','3373']
+            repert=['12267']
             collection_file=os.path.join(options.outputcatalogs,'LANDSAT_ETM.csv')			
         if produit.startswith('LT5'):
-            repert=['3119','4345']
+            repert=['12266']
             if 2000<=int(year_start)<=2009:
                 collection_file=os.path.join(options.outputcatalogs,'LANDSAT_TM-2000-2009.csv')
             if 2010<=int(year_start)<=2012:
@@ -570,15 +566,14 @@ def main():
             produit=nom_prod.strip()
             print produit
             if produit.startswith('LC8'):
-                repert='4923'
+                repert='12864'
                 stations=['LGN']
             if produit.startswith('LE7'):
-                repert='3373'
-                #repert='3372"
+                repert='12267'
                 stations=['EDC','SGS','AGS','ASN','SG1']
             if produit.startswith('LT5'):
-                repert='3119'
-                stations=['GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS']	
+                repert='12266'
+                stations=['ASN','GLC','ASA','KIR','MOR','KHC', 'PAC', 'KIS', 'CHM', 'LGS', 'MGR', 'COA', 'MPS','JSA']	
             if not os.path.exists(rep+'/'+site):
                 os.mkdir(rep+'/'+site)
             url="https://earthexplorer.usgs.gov/download/%s/%s/STANDARD/EE"%(repert,produit)
