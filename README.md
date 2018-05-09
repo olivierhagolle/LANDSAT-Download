@@ -43,17 +43,23 @@ The nice progress bar was provided by Jake Brinkmann ( Thanks Jake !)
 
 Vascobnunes made large improvements, in terms of performance (connection to EarthExplorer was included in the download loop !) and added options to automatically unzip data, and configuration for LANDSAT 5 and 7. (Thanks Vascobnunes !)
 
-There is a difficulty with this code which is the necessity to know in advance the station where the product is received, the directory where it is stored, and the version of the product. If this is not known, there is a need to try the various possibilities, which takes some time. It is also not excluded that USGS might change these values from time to time.
+## Troubleshooting
+There is a difficulty with this code which is the necessity to know in advance the station where the product is received, the directory where it is stored, and the version of the product. If this is not known, there is a need to try the various possibilities, which takes some time. It is also not excluded that USGS might change these values from time to time. They ghanged it for instance when introducing Landsat Coolelctions
 
 Here is what we found so far :
 
 | Satellite name | directory    | Stations                                       | Versions |
 
-| LT5            |  3119,4345   | GLC,ASA,KIR,MOR,KHC,PAC,KIS,CHM,LGS,MGR,COA,MPS|   0-1    |
+| LT5            |  12266  | GLC,ASA,KIR,MOR,KHC,PAC,KIS,CHM,LGS,MGR,COA,MPS,JSA |   0-1    |
 
-| LE7            |  3373,3372   |'EDC','SGS','AGS','ASN'                         |   0-1    |
+| LE7            |  12267  |'EDC','SGS','AGS','ASN'                         |   0-1    |
 
-| LT8            |  4923        | 'LGN'                                          |   0-5    |
+| LT8            |  12864  | 'LGN'                                          |   0-5    |
 
 
-If the configuration we provide by default does not work, you may provide the directory and station on the command line, using options --dir and --station
+If the configuration we provide by default does not work, you may provide the directory and station on the command line, using options --dir and --station . If you use thess options, it might speed a little the download as the tool will not need to search for all possible stations.
+
+
+To find the station, you can try to download a preoduct from the user interface (https://earthexplorer.usgs.gov), annd check with the web console which dir and station the product belongs to. Here is for instance a screen copy provided by 
+
+https://user-images.githubusercontent.com/33367738/39814561-2246a3a8-5395-11e8-8741-54b8d7dc251c.JPG-
