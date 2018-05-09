@@ -62,4 +62,4 @@ If the configuration we provide by default does not work, you may provide the di
 
 To find the station, you can try to download a preoduct from the user interface (https://earthexplorer.usgs.gov), annd check with the web console which dir and station the product belongs to. Here is for instance a screen copy provided by 
 
-https://user-images.githubusercontent.com/33367738/39814561-2246a3a8-5395-11e8-8741-54b8d7dc251c.JPG-
+<img  title="How to get product directory and station" src="https://github.com/olivierhagolle/LANDSAT-Download/blob/master/find_dir_and_station.jpg" alt="" width="130"  />
