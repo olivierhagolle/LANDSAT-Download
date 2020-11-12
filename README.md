@@ -1,6 +1,8 @@
 LANDSAT-Download
 ================
 
+*It seems USGS has changed the structure of its data, and so far, I have not been able to find the direct links to the products? Help welcome !*
+
 *you might also be interested by the S2-download tool to download Sentinel-2 data
 https://github.com/olivierhagolle/Sentinel-download/blob/master/README.md*
 
